@@ -1,6 +1,7 @@
 import java.util.*;
+import java.io.*;
 
-public class ListGraph implements Graph {
+public class ListGraph<T> implements Graph, Serializable {
 
     private Map<Object, Set<Edge>> nodes = new HashMap<>();
 
