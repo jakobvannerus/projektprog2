@@ -16,12 +16,17 @@ public class ListGraph<T> implements Graph, Serializable {
         if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
             throw new NoSuchElementException("Element does not exist");
         }
+        if (weight < 0){
+            throw new IllegalArgumentException("Weight is negativ");
+        }
         Set<Edge> set1 = nodes.get(node1);
         Edge edge1 = new Edge (node2, name, weight);
         set1.add(edge1);
         Set<Edge> set2 = nodes.get(node2);
         Edge edge2 = new Edge (node1, name, weight);
         set2.add(edge2);
+
+        if (n)
 
     }
 

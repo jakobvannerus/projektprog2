@@ -11,6 +11,7 @@ public class Edge<T> implements Serializable {
 
     public Edge(Object node, String name, int weight) {
 
+        this.node = node;
         this.name = name;
         this.weight = weight;
 
@@ -30,6 +31,10 @@ public class Edge<T> implements Serializable {
         } else {
 
         }
+    }
+
+    public Object getDestination(Object node){
+        return destination;
     }
 
 }
