@@ -10,20 +10,20 @@ public class ListGraph<T> implements Graph, Serializable {
         nodes.putIfAbsent(node, new HashSet<>());
     }
 
-//    @Override
-//    public void connect(Object node1, Object node2, String name, int weight) {
-//
-//        if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
-//            throw new NoSuchElementException("Element does not exist");
-//        }
-//        Set<Edge> set1 = nodes.get(node1);
-//        Edge edge1 = new Edge (node2, name, weight);
-//        set1.add(edge1);
-//        Set<Edge> set2 = nodes.get(node2);
-//        Edge edge2 = new Edge (node1, name, weight);
-//        set2.add(edge2);
-//
-//    }
+    @Override
+    public void connect(Object node1, Object node2, String name, int weight) {
+
+        if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
+            throw new NoSuchElementException("Element does not exist");
+        }
+        Set<Edge> set1 = nodes.get(node1);
+        Edge edge1 = new Edge (node2, name, weight);
+        set1.add(edge1);
+        Set<Edge> set2 = nodes.get(node2);
+        Edge edge2 = new Edge (node1, name, weight);
+        set2.add(edge2);
+
+    }
 
     @Override
     public void setConnectionWeight(Object node1, Object node2, int weight) {
