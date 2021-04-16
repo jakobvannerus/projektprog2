@@ -12,12 +12,15 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public void connect(Object node1, Object node2, String name, int weight) {
-
+        boolean alreadyExistingConnection = false;
         if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
             throw new NoSuchElementException("Element does not exist");
         }
         if (weight < 0){
             throw new IllegalArgumentException("Weight is negativ");
+        }
+        for (Edge e : nodes.get(node1)){
+            if (nodes.get(node2).contains(new Edge(node1, )))
         }
         Set<Edge> set1 = nodes.get(node1);
         Edge edge1 = new Edge (node2, name, weight);
@@ -25,8 +28,6 @@ public class ListGraph<T> implements Graph, Serializable {
         Set<Edge> set2 = nodes.get(node2);
         Edge edge2 = new Edge (node1, name, weight);
         set2.add(edge2);
-
-        if (n)
 
     }
 
@@ -68,5 +69,11 @@ public class ListGraph<T> implements Graph, Serializable {
     @Override
     public List<Edge<T>> getPath(Object from, Object to) {
         return null;
+    }
+
+    class WeightComparator implements Comparator<Edge>{
+        public int compare(Edge e1, Edge e2){
+            return e1.getWeight()- e2.getWeight();
+        }
     }
 }
