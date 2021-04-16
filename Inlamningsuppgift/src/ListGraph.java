@@ -19,12 +19,17 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public void connect(Object node1, Object node2, String name, int weight) {
-
+        boolean connectionExist = false;
+        for (Edge e : nodes.get(node1)){
+            if (e.getDestination() == node2){
+                connectionExist = true;
+            }
+        }
         if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
             throw new NoSuchElementException("Element does not exist");
         } else if (weight < MINIMUM_WEIGHT) {
             throw new IllegalArgumentException("Weight cannot be negative");
-        } else if (pathExists(node1, node2)) {
+        } else if (connectionExist) {
             throw new IllegalStateException("Connection already exists");
         }
         Set<Edge> set1 = nodes.get(node1);
@@ -65,23 +70,32 @@ public class ListGraph<T> implements Graph, Serializable {
         if (!nodes.containsKey(node)) {
             throw new NoSuchElementException("Node does not exist");
         }
+        for (Edge e1 : nodes.get(node)){
+            for (Edge e2 : nodes.get(e1.getDestination())){
+                if (e2.getDestination() == e1){
+                    remove(e2);
+                    break;
+                }
+            }
+        }
+        nodes.remove(node);
     }
 
-    private void depthFirstSearch(Object node, Set<Object> visited) {
+    private Set<Object> depthFirstSearch(Object node, Set<Object> visited) {
         visited.add(node);
         for (Edge e : nodes.get(node)) {
             if (!visited.contains(e.getDestination())) {
                 depthFirstSearch(e.getDestination(), visited);
             } else {
-                return;
+                return visited;
             }
-        }
+        }return visited;
     }
 
     @Override
     public boolean pathExists(Object from, Object to) {
         Set<Object> visited = new HashSet<>();
-        depthFirstSearch(from, visited);
+        visited = depthFirstSearch(from, visited);
         return visited.contains(to);
     }
 
