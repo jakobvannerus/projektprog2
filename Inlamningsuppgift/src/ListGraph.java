@@ -36,6 +36,11 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public void setConnectionWeight(Object node1, Object node2, int weight) {
+        if (!nodes.containsKey(node1) || !nodes.containsKey(node2) || !directConnectionExists(node1, node2)) {
+            throw new NoSuchElementException("Element does not exist");
+        }
+        getEdgeBetween(node1, node2).setWeight(weight);
+        getEdgeBetween(node2, node1).setWeight(weight);
 
     }
 
