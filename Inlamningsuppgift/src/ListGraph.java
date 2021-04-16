@@ -19,12 +19,7 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public void connect(Object node1, Object node2, String name, int weight) {
-        boolean connectionExist = false;
-        for (Edge e : nodes.get(node1)){
-            if (e.getDestination() == node2){
-                connectionExist = true;
-            }
-        }
+        boolean connectionExist = directConnectionExists(node1, node2);
         if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
             throw new NoSuchElementException("Element does not exist");
         } else if (weight < MINIMUM_WEIGHT) {
@@ -102,5 +97,15 @@ public class ListGraph<T> implements Graph, Serializable {
     @Override
     public List<Edge<T>> getPath(Object from, Object to) {
         return null;
+    }
+
+    private boolean directConnectionExists(Object node1, Object node2){
+        boolean connectionExist = false;
+        for (Edge e : nodes.get(node1)){
+            if (e.getDestination() == node2){
+                connectionExist = true;
+            }
+        }
+        return  connectionExist;
     }
 }
