@@ -1,8 +1,15 @@
+//PROG2 VT2021, Inlämningsuppgift, del 1
+//Grupp 042
+//Ossian Däckfors osdc4143
+//Jakob Vannerus java4663
+//Sara Emnegard saem0275
+
 import java.util.*;
 import java.io.*;
 
 public class ListGraph<T> implements Graph, Serializable {
 
+    private static final int MINIMUM_WEIGHT = 0;
     private Map<Object, Set<Edge>> nodes = new HashMap<>();
 
     @Override
@@ -12,15 +19,13 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public void connect(Object node1, Object node2, String name, int weight) {
-        boolean alreadyExistingConnection = false;
+
         if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
             throw new NoSuchElementException("Element does not exist");
-        }
-        if (weight < 0){
-            throw new IllegalArgumentException("Weight is negativ");
-        }
-        for (Edge e : nodes.get(node1)){
-            if (nodes.get(node2).contains(new Edge(node1, )))
+        } else if (weight < MINIMUM_WEIGHT) {
+            throw new IllegalArgumentException("Weight cannot be negative");
+        } else if (pathExists(node1, node2)) {
+            throw new IllegalStateException("Connection already exists");
         }
         Set<Edge> set1 = nodes.get(node1);
         Edge edge1 = new Edge (node2, name, weight);
@@ -28,7 +33,6 @@ public class ListGraph<T> implements Graph, Serializable {
         Set<Edge> set2 = nodes.get(node2);
         Edge edge2 = new Edge (node1, name, weight);
         set2.add(edge2);
-
     }
 
     @Override
@@ -58,22 +62,31 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public void remove(Object node) {
+        if (!nodes.containsKey(node)) {
+            throw new NoSuchElementException("Node does not exist");
+        }
+    }
 
+    private void depthFirstSearch(Object node, Set<Object> visited) {
+        visited.add(node);
+        for (Edge e : nodes.get(node)) {
+            if (!visited.contains(e.getDestination())) {
+                depthFirstSearch(e.getDestination(), visited);
+            } else {
+                return;
+            }
+        }
     }
 
     @Override
     public boolean pathExists(Object from, Object to) {
-        return false;
+        Set<Object> visited = new HashSet<>();
+        depthFirstSearch(from, visited);
+        return visited.contains(to);
     }
 
     @Override
     public List<Edge<T>> getPath(Object from, Object to) {
         return null;
-    }
-
-    class WeightComparator implements Comparator<Edge>{
-        public int compare(Edge e1, Edge e2){
-            return e1.getWeight()- e2.getWeight();
-        }
     }
 }

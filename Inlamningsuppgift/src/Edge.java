@@ -1,18 +1,26 @@
+//PROG2 VT2021, Inlämningsuppgift, del 1
+//Grupp 042
+//Ossian Däckfors osdc4143
+//Jakob Vannerus java4663
+//Sara Emnegard saem0275
+
+import java.util.*;
 import java.io.*;
-import java.util.Objects;
+import java.lang.*;
 
 public class Edge<T> implements Serializable {
 
-
     private static final int MINIMUM_WEIGHT = 0;
+    private Object node;
     private Object destination;
     private String name;
     private int weight;
 
-    public Edge(Object destination, String name, int weight) {
-        this.destination = destination;
+    public Edge(Object node, String name, int weight) {
+        this.node = node;
         this.name = name;
         this.weight = weight;
+        this.destination = destination;
     }
 
     public String getName() {
@@ -23,37 +31,19 @@ public class Edge<T> implements Serializable {
         return weight;
     }
 
+    public Object getDestination() {
+        return destination;
+    }
+
     public void setWeight(int weight) {
         if (weight < MINIMUM_WEIGHT) {
             throw new IllegalArgumentException("Invalid weight");
         } else {
             this.weight = weight;
-
         }
     }
 
-    public Object getDestination(){
-        return destination;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (other instanceof Edge){
-            Edge r = (Edge) other;
-            return this.getDestination() == r.getDestination();
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(destination);
-    }
-
-    @Override
     public String toString() {
-        return "to " + destination +
-                " by " + name +
-                " takes " + weight;
+        return String.format(node + " " + name + " " + weight + " " + destination);
     }
 }
