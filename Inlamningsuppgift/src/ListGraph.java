@@ -19,12 +19,11 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public void connect(Object node1, Object node2, String name, int weight) {
-        boolean connectionExist = directConnectionExists(node1, node2);
         if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
             throw new NoSuchElementException("Element does not exist");
         } else if (weight < MINIMUM_WEIGHT) {
             throw new IllegalArgumentException("Weight cannot be negative");
-        } else if (connectionExist) {
+        } else if (directConnectionExists(node1, node2)) {
             throw new IllegalStateException("Connection already exists");
         }
         Set<Edge> set1 = nodes.get(node1);
@@ -52,7 +51,19 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public Edge<T> getEdgeBetween(Object node1, Object node2) {
+        if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
+            throw new NoSuchElementException("Element does not exist");
+        }
+        else if (directConnectionExists(node1, node2)) {
+        throw new IllegalStateException("Connection already exists");
+        }
+        for (Edge e : nodes.get(node1)){
+            if (e.getDestination() == node2){
+                return e;
+            }
+        }
         return null;
+
     }
 
     @Override
