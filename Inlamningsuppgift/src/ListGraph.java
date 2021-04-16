@@ -46,7 +46,7 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public Collection<Edge<T>> getEdgesFrom(Object node) {
-        return null;
+        return (Collection)nodes.get(node);
     }
 
     @Override
