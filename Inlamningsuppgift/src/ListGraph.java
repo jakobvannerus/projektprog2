@@ -42,7 +42,7 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public Set getNodes() {
-        return null;
+        return nodes.keySet();
     }
 
     @Override
