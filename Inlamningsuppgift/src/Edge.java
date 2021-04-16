@@ -11,13 +11,11 @@ import java.lang.*;
 public class Edge<T> implements Serializable {
 
     private static final int MINIMUM_WEIGHT = 0;
-    private Object node;
     private Object destination;
     private String name;
     private int weight;
 
     public Edge(Object node, String name, int weight) {
-        this.node = node;
         this.name = name;
         this.weight = weight;
         this.destination = destination;
@@ -44,6 +42,6 @@ public class Edge<T> implements Serializable {
     }
 
     public String toString() {
-        return String.format(node + " " + name + " " + weight + " " + destination);
+        return String.format(" to " + destination +" by %s takes %d", name, weight);
     }
 }
