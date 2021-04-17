@@ -38,6 +38,8 @@ public class ListGraph<T> implements Graph, Serializable {
     public void setConnectionWeight(Object node1, Object node2, int weight) {
         if (!nodes.containsKey(node1) || !nodes.containsKey(node2) || !directConnectionExists(node1, node2)) {
             throw new NoSuchElementException("Element does not exist");
+        } else if (weight < MINIMUM_WEIGHT) {
+            throw new IllegalArgumentException("Weight cannot be negative");
         }
         getEdgeBetween(node1, node2).setWeight(weight);
         getEdgeBetween(node2, node1).setWeight(weight);
@@ -60,7 +62,7 @@ public class ListGraph<T> implements Graph, Serializable {
             throw new NoSuchElementException("Element does not exist");
         }
         else if (directConnectionExists(node1, node2)) {
-        throw new IllegalStateException("Connection already exists");
+            throw new IllegalStateException("Connection already exists");
         }
         for (Edge e : nodes.get(node1)){
             if (e.getDestination() == node2){
@@ -156,7 +158,7 @@ public class ListGraph<T> implements Graph, Serializable {
 //        else return gatherPath(from, to, connected);
 //    }
 
-//    fastestPath
+    //    fastestPath
     @Override
     public List<Edge<T>> getPath(Object from, Object to){
         Set<Object> visited = new HashSet<>();

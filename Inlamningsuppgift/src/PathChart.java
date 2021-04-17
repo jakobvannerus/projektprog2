@@ -3,6 +3,7 @@
 //Ossian Däckfors osdc4143
 //Jakob Vannerus java4663
 //Sara Emnegard saem0275
+
 public class PathChart {
 
     private int weight = Integer.MAX_VALUE;
