@@ -92,28 +92,121 @@ public class ListGraph<T> implements Graph, Serializable {
         nodes.remove(node);
     }
 
-    private Set<Object> depthFirstSearch(Object node, Set<Object> visited) {
+    private void depthFirstSearch(Object node, Set<Object> visited) {
         visited.add(node);
         for (Edge e : nodes.get(node)) {
             if (!visited.contains(e.getDestination())) {
                 depthFirstSearch(e.getDestination(), visited);
-            } else {
-                return visited;
             }
-        }return visited;
+        }
     }
 
     @Override
     public boolean pathExists(Object from, Object to) {
         Set<Object> visited = new HashSet<>();
-        visited = depthFirstSearch(from, visited);
+        depthFirstSearch(from, visited);
         return visited.contains(to);
     }
 
-    @Override
-    public List<Edge<T>> getPath(Object from, Object to) {
-        return null;
+    // anyPath!
+//    @Override
+//    public List<Edge<T>> getPath(Object from, Object to) {
+//        Set<Object> visited = new HashSet<>();
+//        Map<Object, Object> connected = new HashMap<>();
+//        depthFirstSearch(from, null, visited, connected);
+//        if (!visited.contains(to)) {
+//            return null;
+//        }
+//        else return gatherPath(from, to, connected);
+//    }
+
+
+    private void depthFirstSearch(Object where, Object whereFrom,
+                                  Set<Object> visited, Map<Object, Object> connected){
+        visited.add(where);
+        connected.put(where, whereFrom);
+        for (Edge e : nodes.get(where)){
+            if (!visited.contains(e.getDestination())){
+                depthFirstSearch(e.getDestination(), where, visited, connected);
+            }
+        }
     }
+//    shortestPath
+//    @Override
+//    public List<Edge<T>> getPath(Object from, Object to) {
+//        LinkedList<Object> queue = new LinkedList<>();
+//        Set<Object> visited = new HashSet<>();
+//        Map<Object, Object> connected = new HashMap<>();
+//        visited.add(from);
+//        queue.addLast(from);
+//        while (!queue.isEmpty()){
+//            Object whereFrom = queue.pollFirst();
+//            for (Edge e : nodes.get(whereFrom)){
+//                Object where = e.getDestination();
+//                if (!visited.contains(where)){
+//                    visited.add(where);
+//                    queue.addLast(where);
+//                    connected.put(where, whereFrom);
+//                }
+//            }
+//        }
+//        if (!visited.contains(to)) {
+//            return null;
+//        }
+//        else return gatherPath(from, to, connected);
+//    }
+
+//    fastestPath
+    @Override
+    public List<Edge<T>> getPath(Object from, Object to){
+        Set<Object> visited = new HashSet<>();
+        Map<Object, PathChart> chart = new HashMap<>();
+        LinkedList<Object> queue = new LinkedList<>();
+        depthFirstSearch(from, to, visited);
+        if (!visited.contains(to)){
+            return null;
+        }
+        for (Object o : visited){
+            chart.put(o, new PathChart());
+        }
+        queue.addFirst(from);
+        chart.get(from).setWeight(0);
+        chart.get(from).bestPathHasBeenFound();
+        while (!queue.isEmpty()){
+            Object whereFrom = queue.pollFirst();
+                for(Edge e : nodes.get(whereFrom)){
+                    if(chart.get(whereFrom).getWeight() + e.getWeight() < chart.get(e.getDestination()).getWeight()){
+                        chart.get(e.getDestination()).setWeight(chart.get(whereFrom).getWeight() + e.getWeight());
+                    }
+
+                }
+        }
+
+
+    }
+
+    private void depthFirstSearch(Object where, Object whereFrom, Set<Object> visited){
+        visited.add(where);
+        for (Edge e : nodes.get(where)){
+            if (!visited.contains(e.getDestination())){
+                depthFirstSearch(e.getDestination(), where, visited);
+            }
+        }
+    }
+
+    private List<Edge<T>> gatherPath(Object from, Object to, Map<Object, Object> connected){
+        List<Edge<T>> path = new ArrayList<>();
+        Object where = to;
+        while (!where.equals(from)){
+            Object whereFrom = connected.get(where);
+            Edge e = getEdgeBetween(whereFrom, where);
+            path.add(e);
+            where = whereFrom;
+        }
+        Collections.reverse(path);
+        return path;
+    }
+
 
     private boolean directConnectionExists(Object node1, Object node2){
         boolean connectionExist = false;
