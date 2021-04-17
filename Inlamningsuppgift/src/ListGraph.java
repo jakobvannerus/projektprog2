@@ -161,7 +161,6 @@ public class ListGraph<T> implements Graph, Serializable {
     public List<Edge<T>> getPath(Object from, Object to){
         Set<Object> visited = new HashSet<>();
         Map<Object, PathChart> chart = new HashMap<>();
-        LinkedList<Object> queue = new LinkedList<>();
         depthFirstSearch(from, to, visited);
         if (!visited.contains(to)){
             return null;
@@ -169,19 +168,40 @@ public class ListGraph<T> implements Graph, Serializable {
         for (Object o : visited){
             chart.put(o, new PathChart());
         }
-        queue.addFirst(from);
+        Object whereFrom = from;
         chart.get(from).setWeight(0);
-        chart.get(from).bestPathHasBeenFound();
-        while (!queue.isEmpty()){
-            Object whereFrom = queue.pollFirst();
-                for(Edge e : nodes.get(whereFrom)){
-                    if(chart.get(whereFrom).getWeight() + e.getWeight() < chart.get(e.getDestination()).getWeight()){
-                        chart.get(e.getDestination()).setWeight(chart.get(whereFrom).getWeight() + e.getWeight());
-                    }
-
+        boolean morePotentialPaths = true;
+        while (morePotentialPaths){
+            chart.get(whereFrom).bestPathHasBeenFound();
+            for(Edge e : nodes.get(whereFrom)){
+                if(chart.get(whereFrom).getWeight() + e.getWeight() < chart.get(e.getDestination()).getWeight()){
+                    chart.get(e.getDestination()).setWeight(chart.get(whereFrom).getWeight() + e.getWeight());
+                    chart.get(e.getDestination()).setWhereFrom(whereFrom);
                 }
-        }
+            }
+            int lowestWeight = Integer.MAX_VALUE;
+            morePotentialPaths = false;
+            for (Object o : visited){
+                if(!chart.get(o).isBestPathFound()){
+                    if(chart.get(o).getWeight() < lowestWeight){
+                        lowestWeight = chart.get(o).getWeight();
+                        whereFrom = chart.get(o);
+                        morePotentialPaths = true;
 
+                    }
+                }
+            }
+        }
+        List<Edge<T>> path = new ArrayList<>();
+        Object where = to;
+        while (!where.equals(from)){
+            whereFrom = chart.get(where).getWhereFrom();
+            Edge e = getEdgeBetween(whereFrom, where);
+            path.add(e);
+            where = whereFrom;
+        }
+        Collections.reverse(path);
+        return path;
 
     }
 
