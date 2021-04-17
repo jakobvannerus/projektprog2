@@ -53,6 +53,9 @@ public class ListGraph<T> implements Graph, Serializable {
 
     @Override
     public Collection<Edge<T>> getEdgesFrom(Object node) {
+        if (!nodes.containsKey(node)) {
+            throw new NoSuchElementException("Element does not exist");
+        }
         return (Collection)nodes.get(node);
     }
 
