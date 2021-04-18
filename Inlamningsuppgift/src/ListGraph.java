@@ -38,6 +38,7 @@ public class ListGraph<T> implements Graph, Serializable {
         noNodeElement(node1, node2);
         if (!directConnectionExists(node1, node2)) {
             throw new NoSuchElementException("Element does not exist");
+//          Skadar inte, men vikten fångas annars redan inne i Edge:
         } else if (weight < MINIMUM_WEIGHT) {
             throw new IllegalArgumentException("Weight cannot be negative");
         }
