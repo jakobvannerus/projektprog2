@@ -6,16 +6,15 @@
 
 import java.util.*;
 import java.io.*;
-import java.lang.*;
 
 public class Edge<T> implements Serializable {
 
     private static final int MINIMUM_WEIGHT = 0;
-    private Object destination;
+    private T destination;
     private String name;
     private int weight;
 
-    public Edge(Object node, String name, int weight) {
+    public Edge(T node, String name, int weight) {
         this.name = name;
         this.weight = weight;
         this.destination = destination;
@@ -29,7 +28,7 @@ public class Edge<T> implements Serializable {
         return weight;
     }
 
-    public Object getDestination() {
+    public T getDestination() {
         return destination;
     }
 

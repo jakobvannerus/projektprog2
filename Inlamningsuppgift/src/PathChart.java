@@ -7,8 +7,8 @@
 public class PathChart {
 
     private int weight = Integer.MAX_VALUE;
-    private boolean bestPathFound = false;
-    private Object whereFrom = null;
+    private boolean bestPathFound;
+    private Object whereFrom;
 
     public int getWeight() {
         return weight;

@@ -7,18 +7,18 @@
 import java.util.*;
 import java.io.*;
 
-public class ListGraph<T> implements Graph, Serializable {
+public class ListGraph<T> implements Graph<T>, Serializable {
 
     private static final int MINIMUM_WEIGHT = 0;
-    private Map<Object, Set<Edge<T>>> nodes = new HashMap<>();
+    private Map<T, Set<Edge<T>>> nodes = new HashMap<>();
 
     @Override
-    public void add(Object node) {
+    public void add(T node) {
         nodes.putIfAbsent(node, new HashSet<>());
     }
 
     @Override
-    public void connect(Object node1, Object node2, String name, int weight) {
+    public void connect(T node1, T node2, String name, int weight) {
         noNodeElement(node1, node2);
         if (weight < MINIMUM_WEIGHT) {
             throw new IllegalArgumentException("Weight cannot be negative");
@@ -34,11 +34,10 @@ public class ListGraph<T> implements Graph, Serializable {
     }
 
     @Override
-    public void setConnectionWeight(Object node1, Object node2, int weight) {
+    public void setConnectionWeight(T node1, T node2, int weight) {
         noNodeElement(node1, node2);
         if (!directConnectionExists(node1, node2)) {
             throw new NoSuchElementException("Element does not exist");
-//          Skadar inte, men vikten fångas annars redan inne i Edge:
         }
         getEdgeBetween(node1, node2).setWeight(weight);
         getEdgeBetween(node2, node1).setWeight(weight);
@@ -46,23 +45,23 @@ public class ListGraph<T> implements Graph, Serializable {
     }
 
     @Override
-    public Set getNodes() {
+    public Set<T> getNodes() {
         return nodes.keySet();
     }
 
     @Override
-    public Collection<Edge<T>> getEdgesFrom(Object node) {
+    public Collection<Edge<T>> getEdgesFrom(T node) {
         noNodeElement(node);
-        return nodes.get(node);
+        return (Collection)nodes.get(node);
     }
 
     @Override
-    public Edge<T> getEdgeBetween(Object node1, Object node2) {
+    public Edge<T> getEdgeBetween(T node1, T node2) {
         noNodeElement(node1, node2);
         if (directConnectionExists(node1, node2)) {
             throw new IllegalStateException("Connection already exists");
         }
-        for (Edge<T> e : nodes.get(node1)){
+        for (Edge e : nodes.get(node1)){
             if (e.getDestination() == node2){
                 return e;
             }
@@ -72,22 +71,22 @@ public class ListGraph<T> implements Graph, Serializable {
     }
 
     @Override
-    public void disconnect(Object node1, Object node2) {
+    public void disconnect(T node1, T node2) {
         noNodeElement(node1, node2);
         if (directConnectionExists(node1, node2)) {
             throw new IllegalStateException("Connection does not exists");
         }
-        remove(getEdgeBetween(node1, node2));
-        remove(getEdgeBetween(node2, node1));
+        remove((T) getEdgeBetween(node1, node2));
+        remove((T) getEdgeBetween(node2, node1));
     }
 
     @Override
-    public void remove(Object node) {
+    public void remove(T node) {
         noNodeElement(node);
         for (Edge<T> e1 : nodes.get(node)){
             for (Edge<T> e2 : nodes.get(e1.getDestination())){
                 if (e2.getDestination() == e1){
-                    remove(e2);
+                    remove((T) e2);
                     break;
                 }
             }
@@ -95,17 +94,8 @@ public class ListGraph<T> implements Graph, Serializable {
         nodes.remove(node);
     }
 
-    private void depthFirstSearch(Object node, Set<Object> visited) {
-        visited.add(node);
-        for (Edge<T> e : nodes.get(node)) {
-            if (!visited.contains(e.getDestination())) {
-                depthFirstSearch(e.getDestination(), visited);
-            }
-        }
-    }
-
     @Override
-    public boolean pathExists(Object from, Object to) {
+    public boolean pathExists(T from, T to) {
         Set<Object> visited = new HashSet<>();
         depthFirstSearch(from, visited);
         return visited.contains(to);
@@ -123,17 +113,6 @@ public class ListGraph<T> implements Graph, Serializable {
 //        else return gatherPath(from, to, connected);
 //    }
 
-
-    private void depthFirstSearch(Object where, Object whereFrom,
-                                  Set<Object> visited, Map<Object, Object> connected) {
-        visited.add(where);
-        connected.put(where, whereFrom);
-        for (Edge<T> e : nodes.get(where)){
-            if (!visited.contains(e.getDestination())){
-                depthFirstSearch(e.getDestination(), where, visited, connected);
-            }
-        }
-    }
 //    shortestPath
 //    @Override
 //    public List<Edge<T>> getPath(Object from, Object to) {
@@ -161,19 +140,35 @@ public class ListGraph<T> implements Graph, Serializable {
 
     //    fastestPath
     @Override
-    public List<Edge<T>> getPath(Object from, Object to) {
-        Set<Object> visited = new HashSet<>();
-        Map<Object, PathChart> chart = new HashMap<>();
+    public List<Edge<T>> getPath(T from, T to){
+        Set<T> visited = new HashSet<>();
+        Map<T, PathChart> chart = new HashMap<>();
         depthFirstSearch(from, to, visited);
         if (!visited.contains(to)){
             return null;
         }
-        for (Object o : visited){
+        for (T o : visited){
             chart.put(o, new PathChart());
         }
-        Object whereFrom = from;
+        T whereFrom = from;
         chart.get(from).setWeight(0);
-        boolean morePotentialPaths = true;
+
+        dijkstrasAlgorithm(visited, chart, whereFrom, true);
+
+        List<Edge<T>> path = new ArrayList<>();
+        T where = to;
+        while (!where.equals(from)){
+            whereFrom = (T) chart.get(where).getWhereFrom();
+            Edge<T> e = getEdgeBetween(whereFrom, where);
+            path.add(e);
+            where = whereFrom;
+        }
+        Collections.reverse(path);
+        return path;
+
+    }
+
+    private void dijkstrasAlgorithm(Set<T> visited, Map<T, PathChart> chart, T whereFrom, boolean morePotentialPaths) {
         while (morePotentialPaths){
             chart.get(whereFrom).bestPathHasBeenFound();
             for(Edge<T> e : nodes.get(whereFrom)){
@@ -184,30 +179,31 @@ public class ListGraph<T> implements Graph, Serializable {
             }
             int lowestWeight = Integer.MAX_VALUE;
             morePotentialPaths = false;
-            for (Object o : visited){
+            for (T o : visited){
                 if(!chart.get(o).isBestPathFound()){
                     if(chart.get(o).getWeight() < lowestWeight){
                         lowestWeight = chart.get(o).getWeight();
-                        whereFrom = o;
+                        whereFrom = (T) chart.get(o);
                         morePotentialPaths = true;
+
                     }
                 }
             }
         }
-        List<Edge<T>> path = new ArrayList<>();
-        Object where = to;
-        while (!where.equals(from)){
-            whereFrom = chart.get(where).getWhereFrom();
-            Edge<T> e = getEdgeBetween(whereFrom, where);
-            path.add(e);
-            where = whereFrom;
-        }
-        Collections.reverse(path);
-        return path;
-
     }
 
-    private void depthFirstSearch(Object where, Object whereFrom, Set<Object> visited) {
+    private void depthFirstSearch(T where, T whereFrom,
+                                  Set<Object> visited, Map<T, T> connected){
+        visited.add(where);
+        connected.put(where, whereFrom);
+        for (Edge<T> e : nodes.get(where)){
+            if (!visited.contains(e.getDestination())){
+                depthFirstSearch(e.getDestination(), where, visited, connected);
+            }
+        }
+    }
+
+    private void depthFirstSearch(T where, T whereFrom, Set<T> visited){
         visited.add(where);
         for (Edge<T> e : nodes.get(where)){
             if (!visited.contains(e.getDestination())){
@@ -216,12 +212,22 @@ public class ListGraph<T> implements Graph, Serializable {
         }
     }
 
-    private List<Edge<T>> gatherPath(Object from, Object to, Map<Object, Object> connected) {
+
+    private void depthFirstSearch(T node, Set<Object> visited) {
+        visited.add(node);
+        for (Edge<T> e : nodes.get(node)) {
+            if (!visited.contains(e.getDestination())) {
+                depthFirstSearch(e.getDestination(), visited);
+            }
+        }
+    }
+
+    private List<Edge<T>> gatherPath(T from, T to, Map<T, T> connected){
         List<Edge<T>> path = new ArrayList<>();
-        Object where = to;
+        T where = to;
         while (!where.equals(from)){
-            Object whereFrom = connected.get(where);
-            Edge<T> e = getEdgeBetween(whereFrom, where);
+            T whereFrom = connected.get(where);
+            Edge e = getEdgeBetween(whereFrom, where);
             path.add(e);
             where = whereFrom;
         }
@@ -230,35 +236,25 @@ public class ListGraph<T> implements Graph, Serializable {
     }
 
 
-    private boolean directConnectionExists(Object node1, Object node2) {
+    private boolean directConnectionExists(T node1, T node2){
         boolean connectionExist = false;
         for (Edge<T> e : nodes.get(node1)){
-            if (e.getDestination() == node2){
+            if (e.getDestination() == node2) {
                 connectionExist = true;
+                break;
             }
         }
-        return connectionExist;
+        return  connectionExist;
     }
 
-    private void noNodeElement(Object node) {
+    private void noNodeElement(T node){
         if (!nodes.containsKey(node)) {
             throw new NoSuchElementException("Element does not exist");
         }
     }
-    private void noNodeElement(Object node1, Object node2) {
+    private void noNodeElement(T node1, T node2){
         if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
             throw new NoSuchElementException("Element does not exist");
         }
-    }
-
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Object o : nodes.keySet()) {
-            stringBuilder.append(o.toString() + ":\n");
-            for (Edge<T> e : nodes.get(o)) {
-                stringBuilder.append("\t" + e.toString() + "\n");
-            }
-        }
-        return stringBuilder.toString();
     }
 }
