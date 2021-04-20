@@ -4,17 +4,17 @@
 //Jakob Vannerus java4663
 //Sara Emnegard saem0275
 
-public class PathChart {
+public class PathChart<T> {
 
     private int weight = Integer.MAX_VALUE;
     private boolean bestPathFound;
-    private Object whereFrom;
+    private T whereFrom;
 
     public int getWeight() {
         return weight;
     }
 
-    public Object getWhereFrom() {
+    public T getWhereFrom() {
         return whereFrom;
     }
 
@@ -30,7 +30,7 @@ public class PathChart {
         this.weight = weight;
     }
 
-    public void setWhereFrom(Object whereFrom) {
+    public void setWhereFrom(T whereFrom) {
         this.whereFrom = whereFrom;
     }
 }
