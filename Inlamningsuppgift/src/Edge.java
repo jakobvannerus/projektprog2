@@ -17,7 +17,7 @@ public class Edge<T> implements Serializable {
     public Edge(T node, String name, int weight) {
         this.name = name;
         this.weight = weight;
-        this.destination = destination;
+        this.destination = node;
     }
 
     public String getName() {
@@ -41,6 +41,6 @@ public class Edge<T> implements Serializable {
     }
 
     public String toString() {
-        return String.format(" to " + destination +" by %s takes %d", name, weight);
+        return String.format(" till " + destination +" med %s tar %d", name, weight);
     }
 }

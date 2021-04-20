@@ -58,8 +58,8 @@ public class ListGraph<T> implements Graph<T>, Serializable {
     @Override
     public Edge<T> getEdgeBetween(T node1, T node2) {
         noNodeElement(node1, node2);
-        if (directConnectionExists(node1, node2)) {
-            throw new IllegalStateException("Connection already exists");
+        if (!directConnectionExists(node1, node2)) {
+            throw new IllegalStateException("Connection does not exist");
         }
         for (Edge e : nodes.get(node1)){
             if (e.getDestination() == node2){
@@ -73,8 +73,8 @@ public class ListGraph<T> implements Graph<T>, Serializable {
     @Override
     public void disconnect(T node1, T node2) {
         noNodeElement(node1, node2);
-        if (directConnectionExists(node1, node2)) {
-            throw new IllegalStateException("Connection does not exists");
+        if (!directConnectionExists(node1, node2)) {
+            throw new IllegalStateException("Connection does not exist");
         }
         remove((T) getEdgeBetween(node1, node2));
         remove((T) getEdgeBetween(node2, node1));
@@ -252,9 +252,22 @@ public class ListGraph<T> implements Graph<T>, Serializable {
             throw new NoSuchElementException("Element does not exist");
         }
     }
+
     private void noNodeElement(T node1, T node2){
         if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
             throw new NoSuchElementException("Element does not exist");
         }
     }
+
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Object o : nodes.keySet()) {
+            stringBuilder.append(o.toString() + ":\n");
+            for (Edge<T> e : nodes.get(o)) {
+                stringBuilder.append("\t" + e.toString() + "\n");
+            }
+        }
+        return stringBuilder.toString();
+    }
+
 }
