@@ -3,11 +3,6 @@
 //Ossian Däckfors osdc4143
 //Jakob Vannerus java4663
 //Sara Emnegard saem0275
-//PROG2 VT2021, Inlämningsuppgift, del 1
-//Grupp 042
-//Ossian Däckfors osdc4143
-//Jakob Vannerus java4663
-//Sara Emnegard saem0275
 
 import java.util.*;
 import java.io.*;
@@ -15,7 +10,7 @@ import java.io.*;
 public class ListGraph<T> implements Graph<T>, Serializable {
 
     private static final int MINIMUM_WEIGHT = 0;
-    private Map<T, Set<Edge<T>>> nodes = new HashMap<>();
+    private final Map<T, Set<Edge<T>>> nodes = new HashMap<>();
 
     @Override
     public void add(T node) {
