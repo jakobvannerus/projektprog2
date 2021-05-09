@@ -57,9 +57,6 @@ public class ListGraph<T> implements Graph<T>, Serializable {
     @Override
     public Edge<T> getEdgeBetween(T node1, T node2) {
         noNodeElement(node1, node2);
-//        if (!directConnectionExists(node1, node2)) {
-//            throw new IllegalStateException("Connection does not exist");
-//        }
         for (Edge<T> e : nodes.get(node1)){
             if (e.getDestination() == node2){
                 return e;
@@ -114,44 +111,6 @@ public class ListGraph<T> implements Graph<T>, Serializable {
         return visited.contains(to);
     }
 
-//     anyPath!
-//    @Override
-//    public List<Edge<T>> getPath(T from, T to) {
-//        Set<T> visited = new HashSet<>();
-//        Map<T, T> connected = new HashMap<>();
-//        depthFirstSearch(from, null, visited, connected);
-//        if (!visited.contains(to)) {
-//            return null;
-//        }
-//        else return gatherPath(from, to, connected);
-//    }
-
-//      shortestPath!!
-//    @Override
-//    public List<Edge<T>> getPath(T from, T to) {
-//        LinkedList<T> queue = new LinkedList<>();
-//        Set<T> visited = new HashSet<>();
-//        Map<T, T> connected = new HashMap<>();
-//        visited.add(from);
-//        queue.addLast(from);
-//        while (!queue.isEmpty()){
-//            T whereFrom = queue.pollFirst();
-//            for (Edge<T> e : nodes.get(whereFrom)){
-//                T where = e.getDestination();
-//                if (!visited.contains(where)){
-//                    visited.add(where);
-//                    queue.addLast(where);
-//                    connected.put(where, whereFrom);
-//                }
-//            }
-//        }
-//        if (!visited.contains(to)) {
-//            return null;
-//        }
-//        else return gatherPath(from, to, connected);
-//    }
-
-//        fastestPath!!!
     @Override
     public List<Edge<T>> getPath(T from, T to){
         Set<T> visited = new HashSet<>();

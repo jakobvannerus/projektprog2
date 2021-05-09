@@ -13,7 +13,7 @@ import java.util.NoSuchElementException;
  */
 public class I1 {
 
-/*	public static final String MISSING_NODE = "Z";
+	public static final String MISSING_NODE = "Z";
 	private final Graph<String> stringGraph = new ListGraph<>();
 
 	public static void main(String[] args) throws Exception {
@@ -167,5 +167,5 @@ public class I1 {
 		if (stringGraph.getNodes().contains("C")) {
 			throw new Exception("Error: node not removed.");
 		}
-	}*/
+	}
 }
