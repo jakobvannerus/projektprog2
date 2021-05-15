@@ -1,17 +1,22 @@
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.layout.FlowPane;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class Main extends Application {
 
@@ -25,10 +30,13 @@ public class Main extends Application {
         launch(args);
     }
 
+    private Stage stage;
+    private BorderPane root = new BorderPane();
+    Pane center = new Pane();
+
     @Override
     public void start(Stage stage) throws Exception {
-        BorderPane root = new BorderPane();
-        Pane center = new Pane();
+        this.stage = stage;
         root.setCenter(center);
 
         Scene s = new Scene(root);
@@ -44,6 +52,16 @@ public class Main extends Application {
         menu.getMenus().add(fileMenu);
         MenuItem newMapItem = new MenuItem("New Map");
         fileMenu.getItems().add(newMapItem);
+        newMapItem.setOnAction(new NewMapHandler());
+        MenuItem openItem = new MenuItem("Open");
+        fileMenu.getItems().add(openItem);
+        MenuItem saveItem = new MenuItem("Save");
+        fileMenu.getItems().add(saveItem);
+        MenuItem saveImageItem = new MenuItem("Save Image");
+        fileMenu.getItems().add(saveImageItem);
+        saveImageItem.setOnAction(new SaveImageHandler());
+        MenuItem exitItem = new MenuItem("Exit");
+        fileMenu.getItems().add(exitItem);
 
         FlowPane buttons = new FlowPane();
         buttons.setAlignment(Pos.CENTER);
@@ -54,9 +72,43 @@ public class Main extends Application {
         buttons.getChildren().add(changeConnectionButton);
         vbox.getChildren().add(buttons);
 
-        Image europe = new Image("/lägg/in/fil/här.jpg");
+        Image europe = new Image("file:/Users/jakobvannerus/Documents/IdeaProjects/Inlämningsuppgift/src/europa.gif");
         ImageView imageView = new ImageView(europe);
-        root.getChildren().add(imageView);
+        center.getChildren().add(imageView);
+        stage.sizeToScene();
+    }
 
+    class NewMapHandler implements EventHandler<ActionEvent> {
+
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            Image europe = new Image("file:/Users/jakobvannerus/Documents/IdeaProjects/Inlämningsuppgift/src/europa.gif");
+            ImageView imageView = new ImageView(europe);
+            center.getChildren().add(imageView);
+            stage.sizeToScene();
+            }
+        }
+
+    class OpenHandler implements EventHandler<ActionEvent> {
+
+        @Override
+        public void handle(ActionEvent actionEvent) {
+
+        }
+    }
+
+    class SaveImageHandler implements EventHandler<ActionEvent> {
+
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            try {
+                WritableImage image = center.snapshot(null, null);
+                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+                ImageIO.write(bufferedImage, "png", new File("capture.png"));
+            } catch (IOException e) { 
+                Alert a = new Alert(Alert.AlertType.ERROR, "IO-Error: " + e.getMessage());
+                a.showAndWait();
+            }
+        }
     }
 }
