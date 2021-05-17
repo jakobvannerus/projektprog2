@@ -24,6 +24,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
+
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Cursor;
 
@@ -89,8 +91,10 @@ public class Main extends Application {
         @Override
         public void handle(ActionEvent mouseEvent) {
             center.setOnMouseClicked(new ClickHandler());
+            new DialogHandler();
             newPlaceButton.setDisable(true);
             center.setCursor(Cursor.CROSSHAIR);
+
         }
     }
 
@@ -105,6 +109,19 @@ public class Main extends Application {
             newPlaceButton.setDisable(false);
             center.setCursor(Cursor.DEFAULT);
             changed = true;
+        }
+    }
+
+    class DialogHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Name");
+            dialog.setContentText("Name of place: ");
+            Optional<String> answer = dialog.showAndWait();
+            if (answer.isPresent()) {
+
+            }
         }
     }
 
