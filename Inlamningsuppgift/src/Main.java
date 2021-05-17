@@ -25,9 +25,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
-
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Cursor;
+import javafx.stage.WindowEvent;
 
 public class Main extends Application {
 
@@ -90,11 +90,10 @@ public class Main extends Application {
     class NewPlaceHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent mouseEvent) {
+
             center.setOnMouseClicked(new ClickHandler());
-            new DialogHandler();
             newPlaceButton.setDisable(true);
             center.setCursor(Cursor.CROSSHAIR);
-
         }
     }
 
@@ -103,16 +102,24 @@ public class Main extends Application {
         public void handle (MouseEvent mouseEvent) {
             double x = mouseEvent.getX();
             double y = mouseEvent.getY();
-            Location n = new Location(x, y);
-            center.getChildren().add(n);
             center.setOnMouseClicked(null);
             newPlaceButton.setDisable(false);
+            newPlaceButton.setOnAction(new DialogHandler(x, y));
             center.setCursor(Cursor.DEFAULT);
             changed = true;
+            /*center.addEventHandler(MouseEvent.MOUSE_CLICKED, new DialogHandler(x, y));*/
         }
     }
 
     class DialogHandler implements EventHandler<ActionEvent> {
+
+        private double x;
+        private double y;
+
+        public DialogHandler(double x, double y){
+            this.x = x;
+            this.y = y;
+        }
         @Override
         public void handle(ActionEvent actionEvent) {
             TextInputDialog dialog = new TextInputDialog();
@@ -120,7 +127,8 @@ public class Main extends Application {
             dialog.setContentText("Name of place: ");
             Optional<String> answer = dialog.showAndWait();
             if (answer.isPresent()) {
-
+                Location l = new Location(answer.get(), x, y);
+                center.getChildren().add(l);
             }
         }
     }
@@ -152,6 +160,19 @@ public class Main extends Application {
             } catch (IOException e) { 
                 Alert a = new Alert(Alert.AlertType.ERROR, "IO-Error: " + e.getMessage());
                 a.showAndWait();
+            }
+        }
+    }
+
+    class ExitHandler implements EventHandler<WindowEvent> {
+        @Override
+        public void handle (WindowEvent windowEvent) {
+            if (changed()) {
+                Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Unsaved changes, exit anyway?");
+                Optional<ButtonType> answer = a.showAndWait();
+                if (answer.isPresent() && answer.get() == ButtonType.CANCEL) {
+                    windowEvent.consume();
+                }
             }
         }
     }

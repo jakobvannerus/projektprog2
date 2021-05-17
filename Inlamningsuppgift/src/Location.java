@@ -6,13 +6,19 @@
 
 public class Location extends javafx.scene.Node {
 
+    private String name;
     private double x;
     private double y;
     private boolean changed = false;
 
-    public Location(double x, double y) {
+    public Location(String name ,double x, double y) {
+        this.name = name;
         this.x = x;
         this.y = y;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public double getX() {
@@ -25,6 +31,10 @@ public class Location extends javafx.scene.Node {
 
     public boolean getChanged() {
         return changed;
+    }
+
+    public void setName() {
+        this.name = name;
     }
 
     @Override
