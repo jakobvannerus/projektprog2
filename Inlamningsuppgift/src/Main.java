@@ -1,8 +1,15 @@
+//PROG2 VT2021, Inlämningsuppgift, del 2
+//Grupp 042
+//Ossian Däckfors osdc4143
+//Jakob Vannerus java4663
+//Sara Emnegard saem0275
+
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -17,6 +24,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.Cursor;
 
 public class Main extends Application {
 
@@ -31,6 +40,7 @@ public class Main extends Application {
     }
 
     private Stage stage;
+    private boolean changed = false;
     private BorderPane root = new BorderPane();
     Pane center = new Pane();
 
@@ -55,6 +65,7 @@ public class Main extends Application {
         newMapItem.setOnAction(new NewMapHandler());
         MenuItem openItem = new MenuItem("Open");
         fileMenu.getItems().add(openItem);
+        openItem.setOnAction(new OpenHandler());
         MenuItem saveItem = new MenuItem("Save");
         fileMenu.getItems().add(saveItem);
         MenuItem saveImageItem = new MenuItem("Save Image");
@@ -68,29 +79,46 @@ public class Main extends Application {
         buttons.getChildren().add(pathFinderButton);
         buttons.getChildren().add(showConnectionButton);
         buttons.getChildren().add(newPlaceButton);
+        newPlaceButton.setOnAction(new NewPlaceHandler());
         buttons.getChildren().add(newConnectionButton);
         buttons.getChildren().add(changeConnectionButton);
         vbox.getChildren().add(buttons);
+    }
 
-        Image europe = new Image("file:/Users/jakobvannerus/Documents/IdeaProjects/Inlämningsuppgift/src/europa.gif");
-        ImageView imageView = new ImageView(europe);
-        center.getChildren().add(imageView);
-        stage.sizeToScene();
+    class NewPlaceHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent mouseEvent) {
+            center.setOnMouseClicked(new ClickHandler());
+            newPlaceButton.setDisable(true);
+            center.setCursor(Cursor.CROSSHAIR);
+        }
+    }
+
+    class ClickHandler implements EventHandler<MouseEvent> {
+        @Override
+        public void handle (MouseEvent mouseEvent) {
+            double x = mouseEvent.getX();
+            double y = mouseEvent.getY();
+            Location n = new Location(x, y);
+            center.getChildren().add(n);
+            center.setOnMouseClicked(null);
+            newPlaceButton.setDisable(false);
+            center.setCursor(Cursor.DEFAULT);
+            changed = true;
+        }
     }
 
     class NewMapHandler implements EventHandler<ActionEvent> {
-
         @Override
         public void handle(ActionEvent actionEvent) {
-            Image europe = new Image("file:/Users/jakobvannerus/Documents/IdeaProjects/Inlämningsuppgift/src/europa.gif");
+            Image europe = new Image("file:/Users/ossiandackfors/Documents/DSV SpelUtveckling/VT2021/Programering 2/projektprog2/Inlamningsuppgift/src/europa.gif");
             ImageView imageView = new ImageView(europe);
             center.getChildren().add(imageView);
             stage.sizeToScene();
-            }
         }
+    }
 
     class OpenHandler implements EventHandler<ActionEvent> {
-
         @Override
         public void handle(ActionEvent actionEvent) {
 
@@ -98,7 +126,6 @@ public class Main extends Application {
     }
 
     class SaveImageHandler implements EventHandler<ActionEvent> {
-
         @Override
         public void handle(ActionEvent actionEvent) {
             try {
@@ -110,5 +137,17 @@ public class Main extends Application {
                 a.showAndWait();
             }
         }
+    }
+
+   private boolean changed() {
+        if (changed) {
+            return true;
+        } else {
+            for (Node n : center.getChildren()) {
+                if (((Location)n).getChanged()) {
+                    return true;
+                }
+            }
+        } return false;
     }
 }
