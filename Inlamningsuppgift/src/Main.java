@@ -37,6 +37,8 @@ public class Main extends Application {
     private Button newConnectionButton = new Button("New Connection");
     private Button changeConnectionButton = new Button("Change Connection");
 
+    private ListGraph<Location> listGraph;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -90,7 +92,6 @@ public class Main extends Application {
     class NewPlaceHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent mouseEvent) {
-
             center.setOnMouseClicked(new ClickHandler());
             newPlaceButton.setDisable(true);
             center.setCursor(Cursor.CROSSHAIR);
@@ -104,24 +105,8 @@ public class Main extends Application {
             double y = mouseEvent.getY();
             center.setOnMouseClicked(null);
             newPlaceButton.setDisable(false);
-            newPlaceButton.setOnAction(new DialogHandler(x, y));
             center.setCursor(Cursor.DEFAULT);
             changed = true;
-            /*center.addEventHandler(MouseEvent.MOUSE_CLICKED, new DialogHandler(x, y));*/
-        }
-    }
-
-    class DialogHandler implements EventHandler<ActionEvent> {
-
-        private double x;
-        private double y;
-
-        public DialogHandler(double x, double y){
-            this.x = x;
-            this.y = y;
-        }
-        @Override
-        public void handle(ActionEvent actionEvent) {
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Name");
             dialog.setContentText("Name of place: ");
@@ -129,6 +114,7 @@ public class Main extends Application {
             if (answer.isPresent()) {
                 Location l = new Location(answer.get(), x, y);
                 center.getChildren().add(l);
+                listGraph.add(l);
             }
         }
     }
