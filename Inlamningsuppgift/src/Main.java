@@ -26,6 +26,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Cursor;
@@ -38,7 +39,8 @@ public class Main extends Application {
     private Button newPlaceButton = new Button("New Place");
     private Button newConnectionButton = new Button("New Connection");
     private Button changeConnectionButton = new Button("Change Connection");
-    private static ListGraph<Location> listGraph = new ListGraph<>();
+    private ListGraph<Location> listGraph = new ListGraph<>();
+    private HashSet<Circle> circles = new HashSet<>();
     private Stage stage;
     private boolean changed = false;
     private BorderPane root = new BorderPane();
@@ -53,9 +55,10 @@ public class Main extends Application {
         this.stage = stage;
         root.setCenter(center);
 
-        Scene s = new Scene(root);
+        Scene scene = new Scene(root);
         stage.setTitle("PathFinder");
-        stage.setScene(s);
+        stage.setScene(scene);
+        stage.setOnCloseRequest(new ExitHandler());
         stage.show();
 
         VBox vbox = new VBox();
@@ -77,6 +80,7 @@ public class Main extends Application {
         saveImageItem.setOnAction(new SaveImageHandler());
         MenuItem exitItem = new MenuItem("Exit");
         fileMenu.getItems().add(exitItem);
+        exitItem.setOnAction(new ExitItemHandler());
 
         FlowPane buttons = new FlowPane();
         buttons.setAlignment(Pos.CENTER);
@@ -112,22 +116,13 @@ public class Main extends Application {
             dialog.setContentText("Name of place: ");
             Optional<String> answer = dialog.showAndWait();
             if (answer.isPresent()) {
-                int i =0;
-                System.err.println(i++);
-                Location l = new Location(answer.get(), x, y);
-                System.err.println(i++);
-//                center.getChildren().add(l);
-                System.err.println(i++);
-                Main.listGraph.add(l);
-                System.err.println(i++);
-                Circle circle = new Circle(x, y, 10.0f, Color.BLUE);
-//                circle.setCenterX(x);
-//                circle.setCenterY(y);
-//                circle.setRadius(10.0f);
-//                circle.setFill(Color.BLUE);
+                Location l = new Location(answer.get(), new Circle(x, y, 7.0f, Color.BLUE));
+                center.getChildren().add(l.getCircle());
+                listGraph.add(l);
             }
         }
     }
+
 
     class NewMapHandler implements EventHandler<ActionEvent> {
         @Override
@@ -157,6 +152,13 @@ public class Main extends Application {
                 Alert a = new Alert(Alert.AlertType.ERROR, "IO-Error: " + e.getMessage());
                 a.showAndWait();
             }
+        }
+    }
+
+    class ExitItemHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
         }
     }
 
