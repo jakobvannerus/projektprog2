@@ -18,6 +18,8 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.scene.layout.FlowPane;
 import javax.imageio.ImageIO;
@@ -36,17 +38,15 @@ public class Main extends Application {
     private Button newPlaceButton = new Button("New Place");
     private Button newConnectionButton = new Button("New Connection");
     private Button changeConnectionButton = new Button("Change Connection");
-
-    private ListGraph<Location> listGraph;
-
-    public static void main(String[] args) {
-        launch(args);
-    }
-
+    protected static ListGraph<Location> listGraph;
     private Stage stage;
     private boolean changed = false;
     private BorderPane root = new BorderPane();
     Pane center = new Pane();
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -112,9 +112,19 @@ public class Main extends Application {
             dialog.setContentText("Name of place: ");
             Optional<String> answer = dialog.showAndWait();
             if (answer.isPresent()) {
+                int i =0;
+                System.err.println(i++);
                 Location l = new Location(answer.get(), x, y);
-                center.getChildren().add(l);
-                listGraph.add(l);
+                System.err.println(i++);
+//                center.getChildren().add(l);
+                System.err.println(i++);
+                Main.listGraph.add(l);
+                System.err.println(i++);
+                Circle circle = new Circle();
+                circle.setCenterX(x);
+                circle.setCenterY(y);
+                circle.setRadius(10.0f);
+                circle.setFill(Color.BLUE);
             }
         }
     }
