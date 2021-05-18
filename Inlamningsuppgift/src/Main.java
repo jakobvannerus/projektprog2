@@ -38,7 +38,7 @@ public class Main extends Application {
     private Button newPlaceButton = new Button("New Place");
     private Button newConnectionButton = new Button("New Connection");
     private Button changeConnectionButton = new Button("Change Connection");
-    protected static ListGraph<Location> listGraph;
+    private static ListGraph<Location> listGraph = new ListGraph<>();
     private Stage stage;
     private boolean changed = false;
     private BorderPane root = new BorderPane();
@@ -120,11 +120,11 @@ public class Main extends Application {
                 System.err.println(i++);
                 Main.listGraph.add(l);
                 System.err.println(i++);
-                Circle circle = new Circle();
-                circle.setCenterX(x);
-                circle.setCenterY(y);
-                circle.setRadius(10.0f);
-                circle.setFill(Color.BLUE);
+                Circle circle = new Circle(x, y, 10.0f, Color.BLUE);
+//                circle.setCenterX(x);
+//                circle.setCenterY(y);
+//                circle.setRadius(10.0f);
+//                circle.setFill(Color.BLUE);
             }
         }
     }
