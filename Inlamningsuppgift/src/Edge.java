@@ -1,4 +1,4 @@
-//PROG2 VT2021, Inlämningsuppgift, del 2
+//PROG2 VT2021, Inlämningsuppgift, del 1
 //Grupp 042
 //Ossian Däckfors osdc4143
 //Jakob Vannerus java4663
