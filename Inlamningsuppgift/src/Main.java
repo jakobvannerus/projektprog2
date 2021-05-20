@@ -119,6 +119,19 @@ public class Main extends Application {
                 Location l = new Location(answer.get(), new Circle(x, y, 7.0f, Color.BLUE));
                 center.getChildren().add(l.getCircle());
                 listGraph.add(l);
+                l.getCircle().setOnMouseClicked(new ColorHandler());
+            }
+        }
+    }
+
+    class ColorHandler implements EventHandler<MouseEvent> {
+        @Override
+        public void handle(MouseEvent mouseEvent) {
+            Location l = (Location)mouseEvent.getSource();
+            if (l.getClicked()) {
+                l.getCircle().setFill(Color.RED);
+            } else {
+                l.getCircle().setFill(Color.BLUE);
             }
         }
     }
@@ -127,7 +140,7 @@ public class Main extends Application {
     class NewMapHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            Image europe = new Image("file:/Users/ossiandackfors/Documents/DSV SpelUtveckling/VT2021/Programering 2/projektprog2/Inlamningsuppgift/src/europa.gif");
+            Image europe = new Image("file:/Users/jakobvannerus/IdeaProjects/Inlämningsuppgift/src/europa.gif");
             ImageView imageView = new ImageView(europe);
             center.getChildren().add(imageView);
             stage.sizeToScene();
@@ -148,7 +161,7 @@ public class Main extends Application {
                 WritableImage image = center.snapshot(null, null);
                 BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
                 ImageIO.write(bufferedImage, "png", new File("capture.png"));
-            } catch (IOException e) { 
+            } catch (IOException e) {
                 Alert a = new Alert(Alert.AlertType.ERROR, "IO-Error: " + e.getMessage());
                 a.showAndWait();
             }
@@ -175,7 +188,7 @@ public class Main extends Application {
         }
     }
 
-   private boolean changed() {
+    private boolean changed() {
         if (changed) {
             return true;
         } else {
