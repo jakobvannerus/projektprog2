@@ -1,8 +1,15 @@
+//PROG2 VT2021, Inlämningsuppgift, del 2
+//Grupp 042
+//Ossian Däckfors osdc4143
+//Jakob Vannerus java4663
+//Sara Emnegard saem0275
+
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -11,12 +18,19 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.scene.layout.FlowPane;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Optional;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.Cursor;
+import javafx.stage.WindowEvent;
 
 public class Main extends Application {
 
@@ -25,23 +39,26 @@ public class Main extends Application {
     private Button newPlaceButton = new Button("New Place");
     private Button newConnectionButton = new Button("New Connection");
     private Button changeConnectionButton = new Button("Change Connection");
+    private ListGraph<Location> listGraph = new ListGraph<>();
+    private HashSet<Circle> circles = new HashSet<>();
+    private Stage stage;
+    private boolean changed = false;
+    private BorderPane root = new BorderPane();
+    Pane center = new Pane();
 
     public static void main(String[] args) {
         launch(args);
     }
-
-    private Stage stage;
-    private BorderPane root = new BorderPane();
-    Pane center = new Pane();
 
     @Override
     public void start(Stage stage) throws Exception {
         this.stage = stage;
         root.setCenter(center);
 
-        Scene s = new Scene(root);
+        Scene scene = new Scene(root);
         stage.setTitle("PathFinder");
-        stage.setScene(s);
+        stage.setScene(scene);
+        stage.setOnCloseRequest(new ExitHandler());
         stage.show();
 
         VBox vbox = new VBox();
@@ -55,6 +72,7 @@ public class Main extends Application {
         newMapItem.setOnAction(new NewMapHandler());
         MenuItem openItem = new MenuItem("Open");
         fileMenu.getItems().add(openItem);
+        openItem.setOnAction(new OpenHandler());
         MenuItem saveItem = new MenuItem("Save");
         fileMenu.getItems().add(saveItem);
         MenuItem saveImageItem = new MenuItem("Save Image");
@@ -62,20 +80,26 @@ public class Main extends Application {
         saveImageItem.setOnAction(new SaveImageHandler());
         MenuItem exitItem = new MenuItem("Exit");
         fileMenu.getItems().add(exitItem);
+        exitItem.setOnAction(new ExitItemHandler());
 
         FlowPane buttons = new FlowPane();
         buttons.setAlignment(Pos.CENTER);
         buttons.getChildren().add(pathFinderButton);
         buttons.getChildren().add(showConnectionButton);
         buttons.getChildren().add(newPlaceButton);
+        newPlaceButton.setOnAction(new NewPlaceHandler());
         buttons.getChildren().add(newConnectionButton);
         buttons.getChildren().add(changeConnectionButton);
         vbox.getChildren().add(buttons);
+    }
 
-        Image europe = new Image("file:/Users/jakobvannerus/Documents/IdeaProjects/Inlämningsuppgift/src/europa.gif");
-        ImageView imageView = new ImageView(europe);
-        center.getChildren().add(imageView);
-        stage.sizeToScene();
+    class NewPlaceHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent mouseEvent) {
+            center.setOnMouseClicked(new ClickHandler());
+            newPlaceButton.setDisable(true);
+            center.setCursor(Cursor.CROSSHAIR);
+        }
     }
 
     class ClickHandler implements EventHandler<MouseEvent> {
@@ -114,18 +138,16 @@ public class Main extends Application {
 
 
     class NewMapHandler implements EventHandler<ActionEvent> {
-
         @Override
         public void handle(ActionEvent actionEvent) {
             Image europe = new Image("file:/Users/jakobvannerus/IdeaProjects/Inlämningsuppgift/src/europa.gif");
             ImageView imageView = new ImageView(europe);
             center.getChildren().add(imageView);
             stage.sizeToScene();
-            }
         }
+    }
 
     class OpenHandler implements EventHandler<ActionEvent> {
-
         @Override
         public void handle(ActionEvent actionEvent) {
 
@@ -133,7 +155,6 @@ public class Main extends Application {
     }
 
     class SaveImageHandler implements EventHandler<ActionEvent> {
-
         @Override
         public void handle(ActionEvent actionEvent) {
             try {

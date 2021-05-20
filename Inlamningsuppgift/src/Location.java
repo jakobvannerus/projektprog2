@@ -5,24 +5,25 @@
 //Sara Emnegard saem0275
 
 import javafx.event.EventHandler;
+import javafx.scene.Node;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-public class Location extends Circle {
+public class Location extends Canvas {
 
     private String name;
     private Circle circle;
     private Color color;
+    private boolean clicked = true;
     private boolean changed = false;
 
     public Location(String name, Circle circle) {
         this.name = name;
         this.circle = circle;
-        circle.focusedProperty().addListener(new FocusHandler());
-        setOnMousePressed(new ColorChange());
     }
 
     public String getName() {
@@ -42,42 +43,34 @@ public class Location extends Circle {
         return circle;
     }
 
-    public void setColor() {
-        this.color = color;
+    public boolean getClicked() {
+        return clicked;
+    }
+
+    public void isClicked() {
+        if (clicked) {
+            circle.setFill(Color.RED);
+        } else {
+            circle.setFill(Color.BLUE);
+        }
     }
 
     @Override
-    public javafx.scene.Node getStyleableNode() {
+    public Node getStyleableNode() {
         return super.getStyleableNode();
     }
 
-
-    class FocusHandler implements ChangeListener<Boolean> {
-        @Override
-        public void changed(ObservableValue obs, Boolean old, Boolean nev){
-            if (nev) {
+    /*class ColorChange implements EventHandler<MouseEvent> {
+        public void change() {
+            if (circle.getFill() == Color.BLUE) {
                 circle.setFill(Color.RED);
             } else {
                 circle.setFill(Color.BLUE);
             }
         }
-    }
-    class ColorChange implements EventHandler<MouseEvent>
-    {
-        public void change()
-        {
-            if (circle.getFill() == Color.BLUE)
-            {
-                circle.setFill(Color.RED);
-            }else {
-                circle.setFill(Color.BLUE);
-            }
-        }
-
-
         @Override
         public void handle(MouseEvent mouseEvent) {
 
         }
-    }
+    }*/
 }
