@@ -18,6 +18,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -25,8 +26,7 @@ import javafx.stage.Stage;
 import javafx.scene.layout.FlowPane;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashSet;
 import java.util.Optional;
 import javafx.scene.input.MouseEvent;
@@ -68,30 +68,42 @@ public class Main extends Application {
         vbox.getChildren().add(menu);
         Menu fileMenu = new Menu("File");
         menu.getMenus().add(fileMenu);
+        fileMenu.setId("menuFile");
         MenuItem newMapItem = new MenuItem("New Map");
         fileMenu.getItems().add(newMapItem);
+        newMapItem.setId("menuNewMap");
         newMapItem.setOnAction(new NewMapHandler());
         MenuItem openItem = new MenuItem("Open");
         fileMenu.getItems().add(openItem);
+        openItem.setId("menuOpenFile");
         openItem.setOnAction(new OpenHandler());
         MenuItem saveItem = new MenuItem("Save");
         fileMenu.getItems().add(saveItem);
+        saveItem.setId("menuSaveFile");
+        saveItem.setOnAction(new SaveHandler());
         MenuItem saveImageItem = new MenuItem("Save Image");
         fileMenu.getItems().add(saveImageItem);
+        saveImageItem.setId("menuSaveImage");
         saveImageItem.setOnAction(new SaveImageHandler());
         MenuItem exitItem = new MenuItem("Exit");
         fileMenu.getItems().add(exitItem);
+        exitItem.setId("menuExit");
         exitItem.setOnAction(new ExitItemHandler());
 
         FlowPane buttons = new FlowPane();
         buttons.setAlignment(Pos.CENTER);
         buttons.getChildren().add(pathFinderButton);
+        pathFinderButton.setId("btnFindPath");
         buttons.getChildren().add(showConnectionButton);
+        showConnectionButton.setId("btnShowConnection");
         buttons.getChildren().add(newPlaceButton);
+        newPlaceButton.setId("btnNewPlace");
         newPlaceButton.setOnAction(new NewPlaceHandler());
         buttons.getChildren().add(newConnectionButton);
+        newConnectionButton.setId("btnNewConnection");
         newConnectionButton.setOnAction(new NewConnectionHandler());
         buttons.getChildren().add(changeConnectionButton);
+        changeConnectionButton.setId("btnChangeConnection");
         vbox.getChildren().add(buttons);
     }
 
@@ -172,7 +184,6 @@ public class Main extends Application {
                     Line line = new Line(l1.getCircle().getCenterX(), l1.getCircle().getCenterY(), l2.getCircle().getCenterX(), l2.getCircle().getCenterY());
                     line.setStroke(Color.BLACK);
                     lines.add(line);
-                    System.err.println(line.getEndX());
                     center.getChildren().add(line);
 
                 }
@@ -183,22 +194,105 @@ public class Main extends Application {
         }
     }
 
-
-
     class NewMapHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            Image europe = new Image("file:/Users/ossiandackfors/Documents/DSV SpelUtveckling/VT2021/Programering 2/projektprog2/Inlamningsuppgift/src/europa.gif");
+            Image europe = new Image("file:europa.gif");
             ImageView imageView = new ImageView(europe);
             center.getChildren().add(imageView);
             stage.sizeToScene();
+            listGraph.getNodes().clear();
         }
     }
 
     class OpenHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
+            try {
+                FileReader fileReader = new FileReader("europa.graph");
+                BufferedReader bufferedReader = new BufferedReader(fileReader);
+                String line = bufferedReader.readLine();
 
+                Image europe = new Image(line);
+                ImageView imageView = new ImageView(europe);
+                center.getChildren().add(imageView);
+                stage.sizeToScene();
+                System.err.println(line);
+                line = bufferedReader.readLine();
+                System.err.println(line);
+                String[] split = line.split(";");
+                System.err.println(line);
+                int counter = 0;
+                while (counter < split.length){
+                    System.err.println("Why");
+                    Location l = new Location(split[counter++], new Circle(Double.parseDouble(split[counter++]),(Double.parseDouble(split[counter++])), 7.0f, Color.BLUE));
+                    listGraph.add(l);
+                    center.getChildren().add(l.getCircle());
+                    l.getCircle().setOnMouseClicked(new ColorHandler());
+                }
+                line = bufferedReader.readLine();
+                while (line != null){
+                    split = line.split(";");
+                    Location l1 = null;
+                    Location l2 = null;
+                    for (Location l : listGraph.getNodes()){
+                        if (l.getName().equals(split[0])){
+                            l1 = l;
+                            break;
+                        }
+                    }
+                    for (Location l : listGraph.getNodes()){
+                        if (l.getName().equals(split[1])){
+                            l2 = l;
+                            break;
+                        }
+                    }
+                    listGraph.connect(l1,l2,split[2],Integer.parseInt(split[4]));
+                    Line mapLine = new Line(l1.getCircle().getCenterX(), l1.getCircle().getCenterY(), l2.getCircle().getCenterX(), l2.getCircle().getCenterY());
+                    mapLine.setStroke(Color.BLACK);
+                    lines.add(mapLine);
+                    center.getChildren().add(mapLine);
+                }
+
+                fileReader.close();
+                bufferedReader.close();
+            } catch (FileNotFoundException e) {
+                System.err.print("FILE ERROR: " + e.getMessage());
+            } catch (IOException e) {
+                System.err.print("IO ERROR: " + e.getMessage());
+            }
+
+        }
+    }
+
+    class SaveHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            try {
+                FileWriter fileWriter = new FileWriter("europa.graph");
+                PrintWriter printWriter = new PrintWriter(fileWriter);
+                printWriter.println("file:europa.gif");
+                int counter = 0;
+                for (Location l : listGraph.getNodes()){
+                    printWriter.print(l.getName() + ";" + l.getCircle().getCenterX() + ";" + l.getCircle().getCenterY());
+                    counter++;
+                    if (counter < listGraph.getNodes().size()){
+                        printWriter.print(";");
+                    }
+                }
+                for (Location l : listGraph.getNodes()){
+                    for (Edge<Location> e : listGraph.getEdgesFrom(l)){
+                        printWriter.print("\n" + l.getName() + ";" + e.getDestination().getName() + ";" + e.getName() + ";" + e.getWeight());
+                    }
+                }
+
+                printWriter.close();
+                fileWriter.close();
+            } catch (FileNotFoundException e) {
+                System.err.println("File not found");
+            } catch (IOException e) {
+                System.err.println("IO Error " + e.getMessage());
+            }
         }
     }
 
@@ -241,7 +335,7 @@ public class Main extends Application {
             return true;
         } else {
             for (Node n : center.getChildren()) {
-                if (((Location)n).getChanged()) {
+                if (((Location) n).getChanged()) {
                     return true;
                 }
             }
