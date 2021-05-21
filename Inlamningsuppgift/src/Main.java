@@ -224,7 +224,6 @@ public class Main extends Application {
                 System.err.println(line);
                 int counter = 0;
                 while (counter < split.length){
-                    System.err.println("Why");
                     Location l = new Location(split[counter++], new Circle(Double.parseDouble(split[counter++]),(Double.parseDouble(split[counter++])), 7.0f, Color.BLUE));
                     listGraph.add(l);
                     center.getChildren().add(l.getCircle());
@@ -247,11 +246,12 @@ public class Main extends Application {
                             break;
                         }
                     }
-                    listGraph.connect(l1,l2,split[2],Integer.parseInt(split[4]));
+                    listGraph.connect(l1,l2,split[2],Integer.parseInt(split[3]));
                     Line mapLine = new Line(l1.getCircle().getCenterX(), l1.getCircle().getCenterY(), l2.getCircle().getCenterX(), l2.getCircle().getCenterY());
                     mapLine.setStroke(Color.BLACK);
                     lines.add(mapLine);
                     center.getChildren().add(mapLine);
+                    line = bufferedReader.readLine();
                 }
 
                 fileReader.close();
