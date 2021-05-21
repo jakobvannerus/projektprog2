@@ -20,6 +20,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import javafx.scene.layout.FlowPane;
 import javax.imageio.ImageIO;
@@ -40,7 +41,7 @@ public class Main extends Application {
     private Button newConnectionButton = new Button("New Connection");
     private Button changeConnectionButton = new Button("Change Connection");
     private ListGraph<Location> listGraph = new ListGraph<>();
-    private HashSet<Circle> circles = new HashSet<>();
+    private HashSet<Line> lines = new HashSet<>();
     private Stage stage;
     private boolean changed = false;
     private BorderPane root = new BorderPane();
@@ -89,6 +90,7 @@ public class Main extends Application {
         buttons.getChildren().add(newPlaceButton);
         newPlaceButton.setOnAction(new NewPlaceHandler());
         buttons.getChildren().add(newConnectionButton);
+        newConnectionButton.setOnAction(new NewConnectionHandler());
         buttons.getChildren().add(changeConnectionButton);
         vbox.getChildren().add(buttons);
     }
@@ -127,8 +129,14 @@ public class Main extends Application {
     class ColorHandler implements EventHandler<MouseEvent> {
         @Override
         public void handle(MouseEvent mouseEvent) {
-            Location l = (Location)mouseEvent.getSource();
-            if (l.getClicked()) {
+            Circle c = (Circle)mouseEvent.getSource();
+            Location l = getByCircle(c);
+            int counter = 0;
+            for (Location locations : listGraph.getNodes()){
+                if (locations.getCircle().getFill() == Color.RED)
+                    counter++;
+            }
+            if (l.getCircle().getFill() == Color.BLUE  &&  counter < 2) {
                 l.getCircle().setFill(Color.RED);
             } else {
                 l.getCircle().setFill(Color.BLUE);
@@ -136,11 +144,51 @@ public class Main extends Application {
         }
     }
 
+    class NewConnectionHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            Location l1 = null;
+            Location l2 = null;
+            for (Location l : listGraph.getNodes()) {
+                if (l.getCircle().getFill() == Color.RED) {
+                    if (l1 != null) {
+                        l2 = l;
+                    } else {
+                        l1 = l;
+                    }
+                }
+            } if (l1 == null || l2 == null) {
+                Alert a = new Alert(Alert.AlertType.ERROR,("Two places must be selected!"));
+                a.showAndWait();
+            } try {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setTitle("Connection");
+                dialog.setHeaderText("Connection from " + l1.getName() + " to " + l2.getName());
+                dialog.setContentText("Name: \n \n Time: ");
+                Optional<String> nameAnswer = dialog.showAndWait();
+                Optional<Integer> timeAnswer = Optional.of(Integer.parseInt(dialog.showAndWait().get()));
+                if (nameAnswer.isPresent() && timeAnswer.isPresent()) {
+                    listGraph.connect(l1, l2, nameAnswer.get(), timeAnswer.get());
+                    Line line = new Line(l1.getCircle().getCenterX(), l1.getCircle().getCenterY(), l2.getCircle().getCenterX(), l2.getCircle().getCenterY());
+                    line.setStroke(Color.BLACK);
+                    lines.add(line);
+                    System.err.println(line.getEndX());
+                    center.getChildren().add(line);
+
+                }
+            } catch (IllegalArgumentException i) {
+                Alert a = new Alert(Alert.AlertType.ERROR, "Incorrect datatype - " + i.getMessage());
+                a.showAndWait();
+            }
+        }
+    }
+
+
 
     class NewMapHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            Image europe = new Image("file:/Users/jakobvannerus/IdeaProjects/Inlämningsuppgift/src/europa.gif");
+            Image europe = new Image("file:/Users/ossiandackfors/Documents/DSV SpelUtveckling/VT2021/Programering 2/projektprog2/Inlamningsuppgift/src/europa.gif");
             ImageView imageView = new ImageView(europe);
             center.getChildren().add(imageView);
             stage.sizeToScene();
@@ -198,5 +246,13 @@ public class Main extends Application {
                 }
             }
         } return false;
+    }
+
+    private Location getByCircle(Circle circle){
+        for (Location l : listGraph.getNodes()){
+            if (l.getCircle() == circle)
+                return l;
+        }
+        return null;
     }
 }

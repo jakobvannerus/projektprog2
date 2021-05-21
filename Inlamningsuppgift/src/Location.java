@@ -13,7 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-public class Location extends Canvas {
+public class Location extends Circle {
 
     private String name;
     private Circle circle;
