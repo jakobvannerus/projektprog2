@@ -1,4 +1,4 @@
-//PROG2 VT2021, Inlämningsuppgift, del 1
+//PROG2 VT2021, Inlämningsuppgift, del 2
 //Grupp 042
 //Ossian Däckfors osdc4143
 //Jakob Vannerus java4663
@@ -198,7 +198,7 @@ public class ListGraph<T> implements Graph<T>, Serializable {
     }
 
 
-    private boolean directConnectionExists(T node1, T node2){
+    public boolean directConnectionExists(T node1, T node2){
         boolean connectionExist = false;
         for (Edge<T> e : nodes.get(node1)){
             if (e.getDestination() == node2) {

@@ -59,18 +59,4 @@ public class Location extends Circle {
     public Node getStyleableNode() {
         return super.getStyleableNode();
     }
-
-    /*class ColorChange implements EventHandler<MouseEvent> {
-        public void change() {
-            if (circle.getFill() == Color.BLUE) {
-                circle.setFill(Color.RED);
-            } else {
-                circle.setFill(Color.BLUE);
-            }
-        }
-        @Override
-        public void handle(MouseEvent mouseEvent) {
-
-        }
-    }*/
 }
