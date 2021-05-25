@@ -22,6 +22,9 @@ import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +44,7 @@ public class PathFinder extends Application {
     private Stage stage;
     private boolean changed = false;
     private BorderPane root = new BorderPane();
-    Pane center = new Pane();
+    Pane center;
 
     public static void main(String[] args) {
         launch(args);
@@ -49,8 +52,10 @@ public class PathFinder extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        center = new Pane();
         this.stage = stage;
         root.setCenter(center);
+        center.setId("outputArea");
 
         Scene scene = new Scene(root);
         stage.setTitle("PathFinder");
@@ -173,8 +178,9 @@ public class PathFinder extends Application {
                 placeAlert.showAndWait();
             } try {
                 List<Edge<Location>> pathList = listGraph.getPath(l1, l2);
-                if (pathList.isEmpty()) {
+                if (pathList == null || pathList.isEmpty()) {
                     Alert noPathsAlert = new Alert(Alert.AlertType.ERROR, ("No paths exist!"));
+                    noPathsAlert.showAndWait();
                 } else {
                     int totalTime = 0;
                     TextArea textArea = new TextArea();
@@ -352,31 +358,7 @@ public class PathFinder extends Application {
     class SaveHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            try {
-                FileWriter fileWriter = new FileWriter("europa.graph");
-                PrintWriter printWriter = new PrintWriter(fileWriter);
-                printWriter.println("file:europa.gif");
-                int counter = 0;
-                for (Location l : listGraph.getNodes()){
-                    printWriter.print(l.getName() + ";" + l.getCircle().getCenterX() + ";" + l.getCircle().getCenterY());
-                    counter++;
-                    if (counter < listGraph.getNodes().size()){
-                        printWriter.print(";");
-                    }
-                }
-                for (Location l : listGraph.getNodes()){
-                    for (Edge<Location> e : listGraph.getEdgesFrom(l)){
-                        printWriter.print("\n" + l.getName() + ";" + e.getDestination().getName() + ";" + e.getName() + ";" + e.getWeight());
-                    }
-                }
-
-                printWriter.close();
-                fileWriter.close();
-            } catch (FileNotFoundException e) {
-                System.err.println("File not found");
-            } catch (IOException e) {
-                System.err.println("IO Error " + e.getMessage());
-            }
+            SaveFile("europa.graph");
         }
     }
 
@@ -442,10 +424,19 @@ public class PathFinder extends Application {
     class ExitHandler implements EventHandler<WindowEvent> {
         @Override
         public void handle (WindowEvent windowEvent) {
-            if (changed()) {
+            SaveFile("control.graph");
+            if (!isEqual()) {
                 Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Unsaved changes, exit anyway?");
                 Optional<ButtonType> answer = a.showAndWait();
                 if (answer.isPresent() && answer.get() == ButtonType.CANCEL) {
+                    PrintWriter writer = null;
+                    try {
+                        writer = new PrintWriter("control.graph");
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    writer.print("");
+                    writer.close();
                     windowEvent.consume();
                 }
             }
@@ -471,4 +462,49 @@ public class PathFinder extends Application {
         }
         return null;
     }
+
+    private static boolean isEqual()
+    {
+        try {
+            if (Files.size(Path.of("control.graph")) != Files.size(Path.of("europa.graph"))) {
+                return false;
+            }
+
+            byte[] first = Files.readAllBytes(Path.of("control.graph"));
+            byte[] second = Files.readAllBytes(Path.of("europa.graph"));
+            return Arrays.equals(first, second);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private void SaveFile(String file) {
+        try {
+            FileWriter fileWriter = new FileWriter(file);
+            PrintWriter printWriter = new PrintWriter(fileWriter);
+            printWriter.println("file:europa.gif");
+            int counter = 0;
+            for (Location l : listGraph.getNodes()) {
+                printWriter.print(l.getName() + ";" + l.getCircle().getCenterX() + ";" + l.getCircle().getCenterY());
+                counter++;
+                if (counter < listGraph.getNodes().size()) {
+                    printWriter.print(";");
+                }
+            }
+            for (Location l : listGraph.getNodes()) {
+                for (Edge<Location> e : listGraph.getEdgesFrom(l)) {
+                    printWriter.print("\n" + l.getName() + ";" + e.getDestination().getName() + ";" + e.getName() + ";" + e.getWeight());
+                }
+            }
+            printWriter.close();
+            fileWriter.close();
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found");
+        } catch (IOException e) {
+            System.err.println("IO Error " + e.getMessage());
+        }
+    }
+
+    
 }
