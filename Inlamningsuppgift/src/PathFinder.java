@@ -9,25 +9,21 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
-import javafx.scene.layout.FlowPane;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Cursor;
@@ -35,7 +31,7 @@ import javafx.stage.WindowEvent;
 
 public class PathFinder extends Application {
 
-    private Button pathFinderButton = new Button("Find Path");
+    private Button findPathButton = new Button("Find Path");
     private Button showConnectionButton = new Button("Show Connection");
     private Button newPlaceButton = new Button("New Place");
     private Button newConnectionButton = new Button("New Connection");
@@ -92,10 +88,12 @@ public class PathFinder extends Application {
 
         FlowPane buttons = new FlowPane();
         buttons.setAlignment(Pos.CENTER);
-        buttons.getChildren().add(pathFinderButton);
-        pathFinderButton.setId("btnFindPath");
+        buttons.getChildren().add(findPathButton);
+        findPathButton.setId("btnFindPath");
+        findPathButton.setOnAction(new FindPathHandler());
         buttons.getChildren().add(showConnectionButton);
         showConnectionButton.setId("btnShowConnection");
+        showConnectionButton.setOnAction(new ShowConnectionHandler());
         buttons.getChildren().add(newPlaceButton);
         newPlaceButton.setId("btnNewPlace");
         newPlaceButton.setOnAction(new NewPlaceHandler());
@@ -104,6 +102,7 @@ public class PathFinder extends Application {
         newConnectionButton.setOnAction(new NewConnectionHandler());
         buttons.getChildren().add(changeConnectionButton);
         changeConnectionButton.setId("btnChangeConnection");
+        changeConnectionButton.setOnAction(new ChangeConnectionHandler());
         vbox.getChildren().add(buttons);
     }
 
@@ -156,6 +155,46 @@ public class PathFinder extends Application {
         }
     }
 
+    class FindPathHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            Location l1 = null;
+            Location l2 = null;
+            for (Location l : listGraph.getNodes()) {
+                if (l.getCircle().getFill() == Color.RED) {
+                    if (l1 != null) {
+                        l2 = l;
+                    } else {
+                        l1 = l;
+                    }
+                }
+            } if (l1 == null || l2 == null) {
+                Alert placeAlert = new Alert(Alert.AlertType.ERROR, ("Two places must be selected!"));
+                placeAlert.showAndWait();
+            } try {
+                List<Edge<Location>> pathList = listGraph.getPath(l1, l2);
+                if (pathList.isEmpty()) {
+                    Alert noPathsAlert = new Alert(Alert.AlertType.ERROR, ("No paths exist!"));
+                } else {
+                    int totalTime = 0;
+                    TextArea textArea = new TextArea();
+                    Dialog dialog = new Dialog(textArea);
+                    dialog.setHeaderText("The path from " + l1.getName() + " to " + l2.getName());
+                    StringBuilder stringBuilder = new StringBuilder();
+                    for (Edge<Location> e : pathList) {
+                        totalTime += e.getWeight();
+                        stringBuilder.append("to ").append(e.getDestination().getName()).append(" by ").append(e.getName()).append(" takes ").append(e.getWeight()).append("\n");
+                    }
+                    stringBuilder.append("Total ").append(totalTime);
+                    textArea.setText(stringBuilder.toString());
+                    dialog.showAndWait();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     class NewConnectionHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
@@ -170,15 +209,15 @@ public class PathFinder extends Application {
                     }
                 }
             } if (l1 == null || l2 == null) {
-                Alert placeAlert = new Alert(Alert.AlertType.ERROR,("Two places must be selected!"));
+                Alert placeAlert = new Alert(Alert.AlertType.ERROR, ("Two places must be selected!"));
                 placeAlert.showAndWait();
-            } try {
 
+            } try {
                 String nameAnswer = "";
                 int timeAnswer = 0;
 
                 Dialog dialog = new Dialog();
-                if (l1 != null && l2 != null) { // För att motarbeta NullPointerException
+                if (l1 != null && l2 != null) {
                     dialog.setHeaderText("Connection from " + l1.getName() + " to " + l2.getName());
                 }
                 dialog.showAndWait();
@@ -227,11 +266,8 @@ public class PathFinder extends Application {
                 ImageView imageView = new ImageView(europe);
                 center.getChildren().add(imageView);
                 stage.sizeToScene();
-                System.err.println(line);
                 line = bufferedReader.readLine();
-                System.err.println(line);
                 String[] split = line.split(";");
-                System.err.println(line);
                 int counter = 0;
                 while (counter < split.length){
                     Location l = new Location(split[counter++], new Circle(Double.parseDouble(split[counter++]),(Double.parseDouble(split[counter++])), 7.0f, Color.BLUE));
@@ -244,23 +280,25 @@ public class PathFinder extends Application {
                     split = line.split(";");
                     Location l1 = null;
                     Location l2 = null;
-                    for (Location l : listGraph.getNodes()){
-                        if (l.getName().equals(split[0])){
+                    for (Location l : listGraph.getNodes()) {
+                        if (l.getName().equals(split[0])) {
                             l1 = l;
                             break;
                         }
                     }
-                    for (Location l : listGraph.getNodes()){
-                        if (l.getName().equals(split[1])){
+                    for (Location l : listGraph.getNodes()) {
+                        if (l.getName().equals(split[1])) {
                             l2 = l;
                             break;
                         }
                     }
-                    listGraph.connect(l1,l2,split[2],Integer.parseInt(split[3]));
-                    Line mapLine = new Line(l1.getCircle().getCenterX(), l1.getCircle().getCenterY(), l2.getCircle().getCenterX(), l2.getCircle().getCenterY());
-                    mapLine.setStroke(Color.BLACK);
-                    lines.add(mapLine);
-                    center.getChildren().add(mapLine);
+                    if (listGraph.getEdgeBetween(l1, l2) == null) {
+                        listGraph.connect(l1, l2, split[2], Integer.parseInt(split[3]));
+                        Line mapLine = new Line(l1.getCircle().getCenterX(), l1.getCircle().getCenterY(), l2.getCircle().getCenterX(), l2.getCircle().getCenterY());
+                        mapLine.setStroke(Color.BLACK);
+                        lines.add(mapLine);
+                        center.getChildren().add(mapLine);
+                    }
                     line = bufferedReader.readLine();
                 }
 
@@ -272,6 +310,42 @@ public class PathFinder extends Application {
                 System.err.print("IO ERROR: " + e.getMessage());
             }
 
+        }
+    }
+    
+    class ShowConnectionHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            Location l1 = null;
+            Location l2 = null;
+            for (Location l : listGraph.getNodes()) {
+                if (l.getCircle().getFill() == Color.RED) {
+                    if (l1 != null) {
+                        l2 = l;
+                    } else {
+                        l1 = l;
+                    }
+                }
+            }
+            if (l1 == null || l2 == null) {
+                Alert placeAlert = new Alert(Alert.AlertType.ERROR, ("Two places must be selected!"));
+                placeAlert.showAndWait();
+            } try {
+                if (l1 != null && l2 != null) {
+                    TextField nameField = new TextField();
+                    TextField timeField = new TextField();
+                    Dialog dialog = new Dialog(nameField, timeField);
+                    dialog.setHeaderText("Connection from " + l1.getName() + " to " + l2.getName());
+                    nameField.setEditable(false);
+                    timeField.setEditable(false);
+                    nameField.setText(listGraph.getEdgeBetween(l1, l2).getName());
+                    timeField.setText(listGraph.getEdgeBetween(l1, l2).getWeight() + "");
+                    dialog.showAndWait();
+                }
+            } catch (IllegalStateException i) {
+                Alert illegalStateAlert = new Alert(Alert.AlertType.ERROR, ("Connection does not exist"));
+                illegalStateAlert.showAndWait();
+            }
         }
     }
 
@@ -302,6 +376,44 @@ public class PathFinder extends Application {
                 System.err.println("File not found");
             } catch (IOException e) {
                 System.err.println("IO Error " + e.getMessage());
+            }
+        }
+    }
+
+    class ChangeConnectionHandler implements EventHandler<ActionEvent> {
+        @Override
+        public void handle(ActionEvent actionEvent) {
+            Location l1 = null;
+            Location l2 = null;
+            for (Location l : listGraph.getNodes()) {
+                if (l.getCircle().getFill() == Color.RED) {
+                    if (l1 != null) {
+                        l2 = l;
+                    } else {
+                        l1 = l;
+                    }
+                }
+            }
+            if (l1 == null || l2 == null) {
+                Alert placeAlert = new Alert(Alert.AlertType.ERROR, ("Two places must be selected!"));
+                placeAlert.showAndWait();
+            }try {
+                if (l1 != null && l2 != null) {
+
+                    int timeAnswer = 0;
+                    TextField nameField = new TextField();
+                    TextField timeField = new TextField();
+                    Dialog dialog = new Dialog(nameField, timeField);
+                    dialog.setHeaderText("Connection from " + l1.getName() + " to " + l2.getName());
+                    nameField.setEditable(false);
+                    nameField.setText(listGraph.getEdgeBetween(l1, l2).getName());
+                    dialog.showAndWait();
+                    timeAnswer = dialog.getTimeField();
+                    listGraph.setConnectionWeight(l1, l2, timeAnswer);
+                }
+            }catch (NumberFormatException e){
+                Alert incorrectFormatAlert = new Alert(Alert.AlertType.ERROR, ("Incorrect datatype"));
+                incorrectFormatAlert.showAndWait();
             }
         }
     }
@@ -344,8 +456,8 @@ public class PathFinder extends Application {
         if (changed) {
             return true;
         } else {
-            for (Node n : center.getChildren()) {
-                if (((Location) n).getChanged()) {
+            for (Location n : listGraph.getNodes()) {
+                if (n.getChanged()) {
                     return true;
                 }
             }
