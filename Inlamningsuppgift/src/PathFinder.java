@@ -42,9 +42,13 @@ public class PathFinder extends Application {
     private ListGraph<Location> listGraph = new ListGraph<>();
     private HashSet<Line> lines = new HashSet<>();
     private Stage stage;
-    private boolean changed;
+    private boolean saved = true;
     private BorderPane root = new BorderPane();
     private Pane center;
+    private Image image = new Image("file:europa.gif");
+    private ImageView imageView = new ImageView(image);
+    private Location l1;
+    private Location l2;
 
     public static void main(String[] args) {
         launch(args);
@@ -131,7 +135,6 @@ public class PathFinder extends Application {
             center.setOnMouseClicked(null);
             newPlaceButton.setDisable(false);
             center.setCursor(Cursor.DEFAULT);
-            changed = true;
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Name");
             dialog.setContentText("Name of place: ");
@@ -158,8 +161,18 @@ public class PathFinder extends Application {
             }
             if (l.getFill() == Color.BLUE  &&  counter < 2) {
                 l.setFill(Color.RED);
+                if (l1 != null){
+                    l2 = l;
+                }else{
+                    l1 = l;
+                }
             } else {
                 l.setFill(Color.BLUE);
+                if(l == l1){
+                    l1 = null;
+                }if (l == l2){
+                    l2 = null;
+                }
             }
         }
     }
@@ -167,17 +180,18 @@ public class PathFinder extends Application {
     class FindPathHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            Location l1 = null;
-            Location l2 = null;
-            for (Location l : listGraph.getNodes()) {
-                if (l.getFill() == Color.RED) {
-                    if (l1 != null) {
-                        l2 = l;
-                    } else {
-                        l1 = l;
-                    }
-                }
-            } if (l1 == null || l2 == null) {
+//            Location l1 = null;
+//            Location l2 = null;
+//            for (Location l : listGraph.getNodes()) {
+//                if (l.getFill() == Color.RED) {
+//                    if (l1 != null) {
+//                        l2 = l;
+//                    } else {
+//                        l1 = l;
+//                    }
+//                }
+//        }
+             if (l1 == null || l2 == null) {
                 Alert placeAlert = new Alert(Alert.AlertType.ERROR, "Two places must be selected!");
                 placeAlert.showAndWait();
             } try {
@@ -208,21 +222,22 @@ public class PathFinder extends Application {
     class NewConnectionHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            Location l1 = null;
-            Location l2 = null;
-            for (Location l : listGraph.getNodes()) {
-                if (l.getFill() == Color.RED) {
-                    if (l1 != null) {
-                        l2 = l;
-                    } else {
-                        l1 = l;
-                    }
-                }
-            }
+//            Location l1 = null;
+//            Location l2 = null;
+//            for (Location l : listGraph.getNodes()) {
+//                if (l.getFill() == Color.RED) {
+//                    if (l1 != null) {
+//                        l2 = l;
+//                    } else {
+//                        l1 = l;
+//                    }
+//                }
+//            }
             if (l1 == null || l2 == null) {
                 Alert placeAlert = new Alert(Alert.AlertType.ERROR, "Two places must be selected!");
                 placeAlert.showAndWait();
             } else {
+                saved = false;
                 if (listGraph.getEdgeBetween(l1, l2) != null) {
                     Alert connectionAlert = new Alert(Alert.AlertType.ERROR, "Connection already exists!");
                     connectionAlert.showAndWait();
@@ -250,9 +265,15 @@ public class PathFinder extends Application {
     class NewMapHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
+//            if (listGraph.getNodes() != null && !listGraph.getNodes().isEmpty()){
+                saved = false;
+//            }
+            l1 = null;
+            l2 = null;
             listGraph = new ListGraph<>();
             Image europe = new Image("file:europa.gif");
-            ImageView imageView = new ImageView(europe);
+            center.getChildren().clear();
+            imageView = new ImageView(europe);
             center.getChildren().add(imageView);
             stage.sizeToScene();
             listGraph.getNodes().clear();
@@ -269,64 +290,67 @@ public class PathFinder extends Application {
                     return;
                 }
             }
-                try {
-                    listGraph = new ListGraph<>();
-                    FileReader fileReader = new FileReader("europa.graph");
-                    BufferedReader bufferedReader = new BufferedReader(fileReader);
-                    String line = bufferedReader.readLine();
-
-                    Image europe = new Image(line);
-                    ImageView imageView = new ImageView(europe);
-                    center.getChildren().add(imageView);
-                    stage.sizeToScene();
+            try {
+                l1 = null;
+                l2 = null;
+                saved = true;
+                listGraph = new ListGraph<>();
+                FileReader fileReader = new FileReader("europa.graph");
+                BufferedReader bufferedReader = new BufferedReader(fileReader);
+                String line = bufferedReader.readLine();
+                Image europe = new Image(line);
+                imageView.setImage(europe);
+                center.getChildren().clear();
+                center.getChildren().add(imageView);
+                stage.sizeToScene();
+                line = bufferedReader.readLine();
+                if (line != null) {
+                    String[] split = line.split(";");
+                    int counter = 0;
+                    while (counter < split.length) {
+                        Location l = new Location(split[counter++], Double.parseDouble(split[counter++]), Double.parseDouble(split[counter++]));
+                        l.save();
+                        listGraph.add(l);
+                        l.setId(l.getName());
+                        center.getChildren().add(l);
+                        l.setOnMouseClicked(new ColorHandler());
+                    }
                     line = bufferedReader.readLine();
-                    if (line != null) {
-                        String[] split = line.split(";");
-                        int counter = 0;
-                        while (counter < split.length) {
-                            Location l = new Location(split[counter++], Double.parseDouble(split[counter++]), Double.parseDouble(split[counter++]));
-                            l.save();
-                            listGraph.add(l);
-                            l.setId(l.getName());
-                            center.getChildren().add(l);
-                            l.setOnMouseClicked(new ColorHandler());
+                    while (line != null) {
+                        split = line.split(";");
+                        Location l1 = null;
+                        Location l2 = null;
+                        for (Location l : listGraph.getNodes()) {
+                            if (l.getName().equals(split[0])) {
+                                l1 = l;
+                                break;
+                            }
+                        }
+                        for (Location l : listGraph.getNodes()) {
+                            if (l.getName().equals(split[1])) {
+                                l2 = l;
+                                break;
+                            }
+                        }
+                        if (listGraph.getEdgeBetween(l1, l2) == null) {
+                            listGraph.connect(l1, l2, split[2], Integer.parseInt(split[3]));
+                            Line mapLine = new Line(l1.getCenterX(), l1.getCenterY(), l2.getCenterX(), l2.getCenterY());
+                            mapLine.setStroke(Color.BLACK);
+                            lines.add(mapLine);
+                            center.getChildren().add(mapLine);
+                            mapLine.setDisable(true);
                         }
                         line = bufferedReader.readLine();
-                        while (line != null) {
-                            split = line.split(";");
-                            Location l1 = null;
-                            Location l2 = null;
-                            for (Location l : listGraph.getNodes()) {
-                                if (l.getName().equals(split[0])) {
-                                    l1 = l;
-                                    break;
-                                }
-                            }
-                            for (Location l : listGraph.getNodes()) {
-                                if (l.getName().equals(split[1])) {
-                                    l2 = l;
-                                    break;
-                                }
-                            }
-                            if (listGraph.getEdgeBetween(l1, l2) == null) {
-                                listGraph.connect(l1, l2, split[2], Integer.parseInt(split[3]));
-                                Line mapLine = new Line(l1.getCenterX(), l1.getCenterY(), l2.getCenterX(), l2.getCenterY());
-                                mapLine.setStroke(Color.BLACK);
-                                lines.add(mapLine);
-                                center.getChildren().add(mapLine);
-                                mapLine.setDisable(true);
-                            }
-                            line = bufferedReader.readLine();
-                        }
-
-                        fileReader.close();
-                        bufferedReader.close();
                     }
-                } catch (FileNotFoundException e) {
-                    System.err.print("FILE ERROR: " + e.getMessage());
-                } catch (IOException e) {
-                    System.err.print("IO ERROR: " + e.getMessage());
+
+                    fileReader.close();
+                    bufferedReader.close();
                 }
+            } catch (FileNotFoundException e) {
+                System.err.print("FILE ERROR: " + e.getMessage());
+            } catch (IOException e) {
+                System.err.print("IO ERROR: " + e.getMessage());
+            }
 
         }
     }
@@ -334,17 +358,17 @@ public class PathFinder extends Application {
     class ShowConnectionHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            Location l1 = null;
-            Location l2 = null;
-            for (Location l : listGraph.getNodes()) {
-                if (l.getFill() == Color.RED) {
-                    if (l1 != null) {
-                        l2 = l;
-                    } else {
-                        l1 = l;
-                    }
-                }
-            }
+//            Location l1 = null;
+//            Location l2 = null;
+//            for (Location l : listGraph.getNodes()) {
+//                if (l.getFill() == Color.RED) {
+//                    if (l1 != null) {
+//                        l2 = l;
+//                    } else {
+//                        l1 = l;
+//                    }
+//                }
+//            }
             if (l1 == null || l2 == null) {
                 Alert placeAlert = new Alert(Alert.AlertType.ERROR, "Two places must be selected!");
                 placeAlert.showAndWait();
@@ -364,32 +388,36 @@ public class PathFinder extends Application {
                     nameField.setText(listGraph.getEdgeBetween(l1, l2).getName());
                     timeField.setText(listGraph.getEdgeBetween(l1, l2).getWeight() + "");
                     dialog.showAndWait();
-                    }
                 }
             }
         }
+    }
 
     class SaveHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
             saveFile("europa.graph");
+            saved = true;
+//            for (Location l : listGraph.getNodes()){
+//                l.setFill(Color.BLUE);
+//            }
         }
     }
 
     class ChangeConnectionHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            Location l1 = null;
-            Location l2 = null;
-            for (Location l : listGraph.getNodes()) {
-                if (l.getFill() == Color.RED) {
-                    if (l1 != null) {
-                        l2 = l;
-                    } else {
-                        l1 = l;
-                    }
-                }
-            }
+//            Location l1 = null;
+//            Location l2 = null;
+//            for (Location l : listGraph.getNodes()) {
+//                if (l.getFill() == Color.RED) {
+//                    if (l1 != null) {
+//                        l2 = l;
+//                    } else {
+//                        l1 = l;
+//                    }
+//                }
+//            }
             if (l1 == null || l2 == null) {
                 Alert placeAlert = new Alert(Alert.AlertType.ERROR, "Two places must be selected!");
                 placeAlert.showAndWait();
@@ -454,32 +482,11 @@ public class PathFinder extends Application {
             if (!l.isSaved())
                 return false;
         }
-        return true;
+        return saved;
     }
 
-    private Location getByCircle(Circle circle) {
-        for (Location l : listGraph.getNodes()){
-            if (l == circle)
-                return l;
-        }
-        return null;
-    }
 
-    private static boolean isEqual()
-    {
-        try {
-            if (Files.size(Path.of("control.graph")) != Files.size(Path.of("europa.graph"))) {
-                return false;
-            }
 
-            byte[] first = Files.readAllBytes(Path.of("control.graph"));
-            byte[] second = Files.readAllBytes(Path.of("europa.graph"));
-            return Arrays.equals(first, second);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
     private void saveFile(String file) {
         try {
