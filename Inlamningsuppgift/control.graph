@@ -1,22 +1,2 @@
 file:europa.gif
-Berlin;411.0;368.0;Stockholm;470.0;242.0;Paris;264.0;416.0;Dublin;181.0;306.0;Madrid;139.0;555.0;Oslo;398.0;220.0;London;245.0;360.0;Hej;467.0;136.5;Amsterdam;309.0;350.0;Warszawa;501.0;377.0;HejDå;433.0;191.5;Lisabon;50.0;558.0
-Berlin;Paris;Train;10
-Berlin;Stockholm;Airplane;3
-Berlin;Oslo;Airplane;2
-Berlin;Warszawa;Train;6
-Stockholm;Berlin;Airplane;3
-Paris;Madrid;Train;10
-Paris;London;Train;2
-Paris;Amsterdam;Train;4
-Paris;Berlin;Train;10
-Dublin;Oslo;Space ship;1
-Dublin;London;Boat;15
-Madrid;Lisabon;Train;3
-Madrid;Paris;Train;10
-Oslo;Berlin;Airplane;2
-Oslo;Dublin;Space ship;1
-London;Paris;Train;2
-London;Dublin;Boat;15
-Amsterdam;Paris;Train;4
-Warszawa;Berlin;Train;6
-Lisabon;Madrid;Train;3
+hj;372.0;363.5;nmk;400.0;482.5;nm;274.0;452.5

@@ -3,7 +3,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.TextArea;
-import java.util.Optional;
+import javafx.scene.control.Button;
+
+
 
 public class Dialog extends Alert {
 
@@ -12,7 +14,7 @@ public class Dialog extends Alert {
     private TextArea textArea = new TextArea();
 
     public Dialog() {
-        super(AlertType.INFORMATION);
+        super(AlertType.CONFIRMATION);
         this.nameField = nameField;
         this.timeField = timeField;
         GridPane grid = new GridPane();
@@ -22,7 +24,7 @@ public class Dialog extends Alert {
     }
 
     public Dialog(TextField nameField, TextField timeField) {
-        super(AlertType.INFORMATION);
+        super(AlertType.CONFIRMATION);
         this.nameField = nameField;
         this.timeField = timeField;
         GridPane grid = new GridPane();

@@ -17,7 +17,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
+import javafx.scene.shape.*;
 import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -42,9 +42,9 @@ public class PathFinder extends Application {
     private ListGraph<Location> listGraph = new ListGraph<>();
     private HashSet<Line> lines = new HashSet<>();
     private Stage stage;
-    private boolean changed = false;
+    private boolean changed;
     private BorderPane root = new BorderPane();
-    Pane center;
+    private Pane center;
 
     public static void main(String[] args) {
         launch(args);
@@ -57,16 +57,11 @@ public class PathFinder extends Application {
         root.setCenter(center);
         center.setId("outputArea");
 
-        Scene scene = new Scene(root);
-        stage.setTitle("PathFinder");
-        stage.setScene(scene);
-        stage.setOnCloseRequest(new ExitHandler());
-        stage.show();
-
         VBox vbox = new VBox();
         root.setTop(vbox);
         MenuBar menu = new MenuBar();
         vbox.getChildren().add(menu);
+        menu.setId("menu");
         Menu fileMenu = new Menu("File");
         menu.getMenus().add(fileMenu);
         fileMenu.setId("menuFile");
@@ -109,6 +104,14 @@ public class PathFinder extends Application {
         changeConnectionButton.setId("btnChangeConnection");
         changeConnectionButton.setOnAction(new ChangeConnectionHandler());
         vbox.getChildren().add(buttons);
+
+        Scene scene = new Scene(root);
+        stage.setTitle("PathFinder");
+        stage.setScene(scene);
+        stage.setOnCloseRequest(new ExitHandler());
+        stage.sizeToScene();
+        stage.centerOnScreen();
+        stage.show();
     }
 
     class NewPlaceHandler implements EventHandler<ActionEvent> {
@@ -134,10 +137,12 @@ public class PathFinder extends Application {
             dialog.setContentText("Name of place: ");
             Optional<String> answer = dialog.showAndWait();
             if (answer.isPresent()) {
-                Location l = new Location(answer.get(), new Circle(x, y, 7.0f, Color.BLUE));
-                center.getChildren().add(l.getCircle());
+                Location l = new Location(answer.get(), x, y);
+                l.setId(l.getName());
+                center.getChildren().add(l);
                 listGraph.add(l);
-                l.getCircle().setOnMouseClicked(new ColorHandler());
+                l.setId(l.getName());
+                l.setOnMouseClicked(new ColorHandler());
             }
         }
     }
@@ -145,17 +150,16 @@ public class PathFinder extends Application {
     class ColorHandler implements EventHandler<MouseEvent> {
         @Override
         public void handle(MouseEvent mouseEvent) {
-            Circle c = (Circle)mouseEvent.getSource();
-            Location l = getByCircle(c);
+            Location l = (Location)mouseEvent.getSource();
             int counter = 0;
             for (Location locations : listGraph.getNodes()){
-                if (locations.getCircle().getFill() == Color.RED)
+                if (locations.getFill() == Color.RED)
                     counter++;
             }
-            if (l.getCircle().getFill() == Color.BLUE  &&  counter < 2) {
-                l.getCircle().setFill(Color.RED);
+            if (l.getFill() == Color.BLUE  &&  counter < 2) {
+                l.setFill(Color.RED);
             } else {
-                l.getCircle().setFill(Color.BLUE);
+                l.setFill(Color.BLUE);
             }
         }
     }
@@ -166,7 +170,7 @@ public class PathFinder extends Application {
             Location l1 = null;
             Location l2 = null;
             for (Location l : listGraph.getNodes()) {
-                if (l.getCircle().getFill() == Color.RED) {
+                if (l.getFill() == Color.RED) {
                     if (l1 != null) {
                         l2 = l;
                     } else {
@@ -174,12 +178,12 @@ public class PathFinder extends Application {
                     }
                 }
             } if (l1 == null || l2 == null) {
-                Alert placeAlert = new Alert(Alert.AlertType.ERROR, ("Two places must be selected!"));
+                Alert placeAlert = new Alert(Alert.AlertType.ERROR, "Two places must be selected!");
                 placeAlert.showAndWait();
             } try {
                 List<Edge<Location>> pathList = listGraph.getPath(l1, l2);
                 if (pathList == null || pathList.isEmpty()) {
-                    Alert noPathsAlert = new Alert(Alert.AlertType.ERROR, ("No paths exist!"));
+                    Alert noPathsAlert = new Alert(Alert.AlertType.ERROR, "No paths exist!");
                     noPathsAlert.showAndWait();
                 } else {
                     int totalTime = 0;
@@ -207,43 +211,37 @@ public class PathFinder extends Application {
             Location l1 = null;
             Location l2 = null;
             for (Location l : listGraph.getNodes()) {
-                if (l.getCircle().getFill() == Color.RED) {
+                if (l.getFill() == Color.RED) {
                     if (l1 != null) {
                         l2 = l;
                     } else {
                         l1 = l;
                     }
                 }
-            } if (l1 == null || l2 == null) {
-                Alert placeAlert = new Alert(Alert.AlertType.ERROR, ("Two places must be selected!"));
+            }
+            if (l1 == null || l2 == null) {
+                Alert placeAlert = new Alert(Alert.AlertType.ERROR, "Two places must be selected!");
                 placeAlert.showAndWait();
-
-            } try {
-                String nameAnswer = "";
-                int timeAnswer = 0;
-
-                Dialog dialog = new Dialog();
-                if (l1 != null && l2 != null) {
-                    dialog.setHeaderText("Connection from " + l1.getName() + " to " + l2.getName());
-                }
-                dialog.showAndWait();
-                nameAnswer = dialog.getNameField();
-                timeAnswer = dialog.getTimeField();
-
-                if (!nameAnswer.isEmpty()) {
-                    listGraph.connect(l1, l2, nameAnswer, timeAnswer);
-                    Line line = new Line(l1.getCircle().getCenterX(), l1.getCircle().getCenterY(), l2.getCircle().getCenterX(), l2.getCircle().getCenterY());
-                    line.setStroke(Color.BLACK);
-                    lines.add(line);
-                    center.getChildren().add(line);
-                }
-            } catch (NumberFormatException n) {
-                Alert a = new Alert(Alert.AlertType.ERROR, "Incorrect datatype - " + n.getMessage());
-                a.showAndWait();
-            } catch (IllegalStateException i) {
-                if (listGraph.directConnectionExists(l1, l2)) {
-                    Alert connectionAlert = new Alert(Alert.AlertType.ERROR, ("Connection already exists!") + i.getMessage());
+            } else {
+                if (listGraph.getEdgeBetween(l1, l2) != null) {
+                    Alert connectionAlert = new Alert(Alert.AlertType.ERROR, "Connection already exists!");
                     connectionAlert.showAndWait();
+                } else {
+                    Dialog dialog = new Dialog();
+                    dialog.setHeaderText("Connection from " + l1.getName() + " to " + l2.getName());
+                    dialog.showAndWait();
+                    String nameAnswer = "";
+                    int timeAnswer = 0;
+                    nameAnswer = dialog.getNameField();
+                    timeAnswer = dialog.getTimeField();
+                    if (!nameAnswer.isEmpty()) {
+                        listGraph.connect(l1, l2, nameAnswer, timeAnswer);
+                        Line line = new Line(l1.getCenterX(), l1.getCenterY(), l2.getCenterX(), l2.getCenterY());
+                        line.setStroke(Color.BLACK);
+                        lines.add(line);
+                        center.getChildren().add(line);
+                        line.setDisable(true);
+                    }
                 }
             }
         }
@@ -252,7 +250,8 @@ public class PathFinder extends Application {
     class NewMapHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            Image europe = new Image("file:/Users/jakobvannerus/IdeaProjects/Inlämningsuppgift/src/europa.gif");
+            listGraph = new ListGraph<>();
+            Image europe = new Image("file:europa.gif");
             ImageView imageView = new ImageView(europe);
             center.getChildren().add(imageView);
             stage.sizeToScene();
@@ -263,69 +262,82 @@ public class PathFinder extends Application {
     class OpenHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            try {
-                FileReader fileReader = new FileReader("europa.graph");
-                BufferedReader bufferedReader = new BufferedReader(fileReader);
-                String line = bufferedReader.readLine();
-
-                Image europe = new Image(line);
-                ImageView imageView = new ImageView(europe);
-                center.getChildren().add(imageView);
-                stage.sizeToScene();
-                line = bufferedReader.readLine();
-                String[] split = line.split(";");
-                int counter = 0;
-                while (counter < split.length){
-                    Location l = new Location(split[counter++], new Circle(Double.parseDouble(split[counter++]),(Double.parseDouble(split[counter++])), 7.0f, Color.BLUE));
-                    listGraph.add(l);
-                    center.getChildren().add(l.getCircle());
-                    l.getCircle().setOnMouseClicked(new ColorHandler());
+            if (!saved()) {
+                Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Unsaved changes, exit anyway?");
+                Optional<ButtonType> answer = a.showAndWait();
+                if (answer.isPresent() && (answer.get() == ButtonType.CANCEL)) {
+                    return;
                 }
-                line = bufferedReader.readLine();
-                while (line != null){
-                    split = line.split(";");
-                    Location l1 = null;
-                    Location l2 = null;
-                    for (Location l : listGraph.getNodes()) {
-                        if (l.getName().equals(split[0])) {
-                            l1 = l;
-                            break;
-                        }
-                    }
-                    for (Location l : listGraph.getNodes()) {
-                        if (l.getName().equals(split[1])) {
-                            l2 = l;
-                            break;
-                        }
-                    }
-                    if (listGraph.getEdgeBetween(l1, l2) == null) {
-                        listGraph.connect(l1, l2, split[2], Integer.parseInt(split[3]));
-                        Line mapLine = new Line(l1.getCircle().getCenterX(), l1.getCircle().getCenterY(), l2.getCircle().getCenterX(), l2.getCircle().getCenterY());
-                        mapLine.setStroke(Color.BLACK);
-                        lines.add(mapLine);
-                        center.getChildren().add(mapLine);
-                    }
-                    line = bufferedReader.readLine();
-                }
-
-                fileReader.close();
-                bufferedReader.close();
-            } catch (FileNotFoundException e) {
-                System.err.print("FILE ERROR: " + e.getMessage());
-            } catch (IOException e) {
-                System.err.print("IO ERROR: " + e.getMessage());
             }
+                try {
+                    listGraph = new ListGraph<>();
+                    FileReader fileReader = new FileReader("europa.graph");
+                    BufferedReader bufferedReader = new BufferedReader(fileReader);
+                    String line = bufferedReader.readLine();
+
+                    Image europe = new Image(line);
+                    ImageView imageView = new ImageView(europe);
+                    center.getChildren().add(imageView);
+                    stage.sizeToScene();
+                    line = bufferedReader.readLine();
+                    if (line != null) {
+                        String[] split = line.split(";");
+                        int counter = 0;
+                        while (counter < split.length) {
+                            Location l = new Location(split[counter++], Double.parseDouble(split[counter++]), Double.parseDouble(split[counter++]));
+                            l.save();
+                            listGraph.add(l);
+                            l.setId(l.getName());
+                            center.getChildren().add(l);
+                            l.setOnMouseClicked(new ColorHandler());
+                        }
+                        line = bufferedReader.readLine();
+                        while (line != null) {
+                            split = line.split(";");
+                            Location l1 = null;
+                            Location l2 = null;
+                            for (Location l : listGraph.getNodes()) {
+                                if (l.getName().equals(split[0])) {
+                                    l1 = l;
+                                    break;
+                                }
+                            }
+                            for (Location l : listGraph.getNodes()) {
+                                if (l.getName().equals(split[1])) {
+                                    l2 = l;
+                                    break;
+                                }
+                            }
+                            if (listGraph.getEdgeBetween(l1, l2) == null) {
+                                listGraph.connect(l1, l2, split[2], Integer.parseInt(split[3]));
+                                Line mapLine = new Line(l1.getCenterX(), l1.getCenterY(), l2.getCenterX(), l2.getCenterY());
+                                mapLine.setStroke(Color.BLACK);
+                                lines.add(mapLine);
+                                center.getChildren().add(mapLine);
+                                mapLine.setDisable(true);
+                            }
+                            line = bufferedReader.readLine();
+                        }
+
+                        fileReader.close();
+                        bufferedReader.close();
+                    }
+                } catch (FileNotFoundException e) {
+                    System.err.print("FILE ERROR: " + e.getMessage());
+                } catch (IOException e) {
+                    System.err.print("IO ERROR: " + e.getMessage());
+                }
 
         }
     }
-    
+
     class ShowConnectionHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
             Location l1 = null;
             Location l2 = null;
             for (Location l : listGraph.getNodes()) {
-                if (l.getCircle().getFill() == Color.RED) {
+                if (l.getFill() == Color.RED) {
                     if (l1 != null) {
                         l2 = l;
                     } else {
@@ -334,9 +346,14 @@ public class PathFinder extends Application {
                 }
             }
             if (l1 == null || l2 == null) {
-                Alert placeAlert = new Alert(Alert.AlertType.ERROR, ("Two places must be selected!"));
+                Alert placeAlert = new Alert(Alert.AlertType.ERROR, "Two places must be selected!");
                 placeAlert.showAndWait();
-            } try {
+            }
+            if (!listGraph.directConnectionExists(l1, l2)) {
+                Alert illegalStateAlert = new Alert(Alert.AlertType.ERROR, "Connection does not exist");
+                illegalStateAlert.showAndWait();
+
+            } else {
                 if (l1 != null && l2 != null) {
                     TextField nameField = new TextField();
                     TextField timeField = new TextField();
@@ -347,18 +364,15 @@ public class PathFinder extends Application {
                     nameField.setText(listGraph.getEdgeBetween(l1, l2).getName());
                     timeField.setText(listGraph.getEdgeBetween(l1, l2).getWeight() + "");
                     dialog.showAndWait();
+                    }
                 }
-            } catch (IllegalStateException i) {
-                Alert illegalStateAlert = new Alert(Alert.AlertType.ERROR, ("Connection does not exist"));
-                illegalStateAlert.showAndWait();
             }
         }
-    }
 
     class SaveHandler implements EventHandler<ActionEvent> {
         @Override
         public void handle(ActionEvent actionEvent) {
-            SaveFile("europa.graph");
+            saveFile("europa.graph");
         }
     }
 
@@ -368,7 +382,7 @@ public class PathFinder extends Application {
             Location l1 = null;
             Location l2 = null;
             for (Location l : listGraph.getNodes()) {
-                if (l.getCircle().getFill() == Color.RED) {
+                if (l.getFill() == Color.RED) {
                     if (l1 != null) {
                         l2 = l;
                     } else {
@@ -377,9 +391,10 @@ public class PathFinder extends Application {
                 }
             }
             if (l1 == null || l2 == null) {
-                Alert placeAlert = new Alert(Alert.AlertType.ERROR, ("Two places must be selected!"));
+                Alert placeAlert = new Alert(Alert.AlertType.ERROR, "Two places must be selected!");
                 placeAlert.showAndWait();
-            }try {
+
+            } try {
                 if (l1 != null && l2 != null) {
 
                     int timeAnswer = 0;
@@ -394,7 +409,7 @@ public class PathFinder extends Application {
                     listGraph.setConnectionWeight(l1, l2, timeAnswer);
                 }
             }catch (NumberFormatException e){
-                Alert incorrectFormatAlert = new Alert(Alert.AlertType.ERROR, ("Incorrect datatype"));
+                Alert incorrectFormatAlert = new Alert(Alert.AlertType.ERROR, "Incorrect datatype");
                 incorrectFormatAlert.showAndWait();
             }
         }
@@ -424,40 +439,27 @@ public class PathFinder extends Application {
     class ExitHandler implements EventHandler<WindowEvent> {
         @Override
         public void handle (WindowEvent windowEvent) {
-            SaveFile("control.graph");
-            if (!isEqual()) {
+            if (!saved()) {
                 Alert a = new Alert(Alert.AlertType.CONFIRMATION, "Unsaved changes, exit anyway?");
                 Optional<ButtonType> answer = a.showAndWait();
                 if (answer.isPresent() && answer.get() == ButtonType.CANCEL) {
-                    PrintWriter writer = null;
-                    try {
-                        writer = new PrintWriter("control.graph");
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    writer.print("");
-                    writer.close();
                     windowEvent.consume();
                 }
             }
         }
     }
 
-    private boolean changed() {
-        if (changed) {
-            return true;
-        } else {
-            for (Location n : listGraph.getNodes()) {
-                if (n.getChanged()) {
-                    return true;
-                }
-            }
-        } return false;
+    private boolean saved() {
+        for (Location l : listGraph.getNodes()) {
+            if (!l.isSaved())
+                return false;
+        }
+        return true;
     }
 
-    private Location getByCircle(Circle circle){
+    private Location getByCircle(Circle circle) {
         for (Location l : listGraph.getNodes()){
-            if (l.getCircle() == circle)
+            if (l == circle)
                 return l;
         }
         return null;
@@ -479,15 +481,16 @@ public class PathFinder extends Application {
         return false;
     }
 
-    private void SaveFile(String file) {
+    private void saveFile(String file) {
         try {
             FileWriter fileWriter = new FileWriter(file);
             PrintWriter printWriter = new PrintWriter(fileWriter);
             printWriter.println("file:europa.gif");
             int counter = 0;
             for (Location l : listGraph.getNodes()) {
-                printWriter.print(l.getName() + ";" + l.getCircle().getCenterX() + ";" + l.getCircle().getCenterY());
+                printWriter.print(l.getName() + ";" + l.getCenterX() + ";" + l.getCenterY());
                 counter++;
+                l.save();
                 if (counter < listGraph.getNodes().size()) {
                     printWriter.print(";");
                 }
@@ -505,6 +508,4 @@ public class PathFinder extends Application {
             System.err.println("IO Error " + e.getMessage());
         }
     }
-
-    
 }

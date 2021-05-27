@@ -4,55 +4,32 @@
 //Jakob Vannerus java4663
 //Sara Emnegard saem0275
 
-import javafx.event.EventHandler;
 import javafx.scene.Node;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 
 public class Location extends Circle {
 
-    private String name;
-    private Circle circle;
-    private Color color;
-    private boolean clicked = true;
-    private boolean changed = false;
+    private final String name;
 
-    public Location(String name, Circle circle) {
+    private boolean clicked = true;
+    private boolean saved;
+
+    public Location(String name, double x, double y) {
+        super(x, y, 7, Color.BLUE);
         this.name = name;
-        this.circle = circle;
     }
 
     public String getName() {
         return name;
     }
 
-    public boolean getChanged() {
-        return changed;
+    public boolean isSaved() {
+        return saved;
     }
 
-    public void setName() {
-        this.name = name;
-
-    }
-
-    public Circle getCircle(){
-        return circle;
-    }
-
-    public boolean getClicked() {
-        return clicked;
-    }
-
-    public void isClicked() {
-        if (clicked) {
-            circle.setFill(Color.RED);
-        } else {
-            circle.setFill(Color.BLUE);
-        }
+    public void save(){
+        saved = true;
     }
 
     @Override
